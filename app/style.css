@@ -1,13 +1,13 @@
 body {
     color: #ffffff;
-    background-color: #202229;
+    background-color: #202229; 
     margin: 0;
     padding: 0;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
 }
 
 /** How do we print the page **/
-
 .page-order {
 	display: flex;
 	flex-direction: row;
@@ -15,7 +15,7 @@ body {
 	flex-wrap: wrap;
 }
 
-/** Just the navbar here**/
+/** Just the navbar here **/
 .left-side {
 	background-color: rgb(50, 49, 46);
 	width: 240px;
@@ -24,7 +24,9 @@ body {
 	flex-direction: column;
 	justify-content: space-between;
 	position: fixed;
+	box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
 }
+
 .navbar {
 	margin-top: 50px;
 	margin-left: 30px;
@@ -32,7 +34,7 @@ body {
 	flex-direction: column;
 	justify-content: space-around;
 	align-items: baseline;
-	font-size: larger;
+	font-size: 24px;
 	flex: 1;
 }
 
@@ -45,8 +47,13 @@ body {
 
 .link {
 	color: #ffffff;
-	margin-bottom: 30px;
+	margin-bottom: 15px;
 	text-decoration: none;
+	transition: color 0.3s ease;
+}
+
+.link:hover {
+	color: #4ca5af;
 }
 
 .credit {
@@ -54,20 +61,22 @@ body {
 	margin-bottom: 25px;
 }
 
-/** Just the big side here**/
+/** Just the big side here **/
 
 .wide-side {
 	display: flex;
 	flex-direction: column;
 	flex: 1;
 	margin-left: 270px; /* Adjusted to account for fixed left-side */
+	padding: 20px;
+	border-radius: 8px;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .server-container {
 	display: flex;
 	flex-direction: column;
 	margin-top: 20px;
-	display: flex;
 	flex-wrap: wrap;
 	justify-content: space-around;
 }
@@ -81,6 +90,12 @@ body {
 	color: #ffffff;
 	display: flex;
 	flex-direction: column;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+	transition: transform 0.3s ease;
+}
+
+.server-status-container:hover {
+	transform: translateY(-5px);
 }
 
 .server-info {
@@ -110,51 +125,57 @@ body {
 }
 
 .server-form {
-  margin-top: 20px;
+	margin-top: 20px;
 }
 
 .server-form input {
-  margin: 5px;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+	margin: 5px;
+	padding: 10px;
+	border: 1px solid #ccc;
+	border-radius: 5px;
 }
 
 .server-form button {
-  padding: 10px 20px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
+	padding: 10px 20px;
+	background-color: #4ca5af;
+	color: white;
+	border: none;
+	border-radius: 5px;
+	cursor: pointer;
+	transition: background-color 0.3s ease;
 }
 
 .server-form button:hover {
-  background-color: #45a049;
+	background-color: #4571a0;
 }
 
 .server-list {
-  margin-top: 20px;
+	margin-top: 20px;
 }
 
 .server-list ul {
-  list-style-type: none;
-  padding: 0;
+	list-style-type: none;
+	padding: 0;
 }
 
 .server-list li {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  margin: 5px 400px;
-  margin-left: -20px;
+	padding: 10px;
+	border: 1px solid #ccc;
+	border-radius: 5px;
+	margin: 5px 400px;
+	margin-left: -20px;
+	background-color: #2a2d34;
+	color: #ffffff;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 10px;
+	transition: background-color 0.3s ease, transform 0.3s ease;
+}
 
-  background-color: #2a2d34;
-  color: #ffffff;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
+.server-list li:hover {
+	background-color: #3a3d45;
+	transform: translateY(-5px);
 }
 
 .error-message {
@@ -163,15 +184,17 @@ body {
 }
 
 .delete-server-btn {
-  background: none;
-  border: none;
-  color: red;
-  font-size: 1.2em;
-  cursor: pointer;
+	background: none;
+	border: none;
+	color: red;
+	font-size: 1.2em;
+	cursor: pointer;
+	transition: color 0.3s ease;
 }
 
 .delete-server-btn:hover {
-  color: darkred;
+	color: darkred;
+	transform: scale(1.1);
 }
 
 @media (max-width: 768px) {
@@ -189,4 +212,10 @@ body {
 	.server-status-container {
 		width: 100%;
 	}
+}
+
+.content-container {
+	padding: 20px;
+	border-radius: 8px;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }

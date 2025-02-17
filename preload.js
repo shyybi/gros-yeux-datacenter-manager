@@ -5,5 +5,6 @@ contextBridge.exposeInMainWorld('api', {
   getServerData: () => ipcRenderer.invoke('get-server-data'),
   addServer: (server) => ipcRenderer.invoke('add-server', server),
   removeServer: (ip) => ipcRenderer.invoke('remove-server', ip),
-  getServers: () => ipcRenderer.invoke('get-servers')
+  getServers: () => ipcRenderer.invoke('get-servers'),
+  updateServer: (server) => ipcRenderer.invoke('update-server', server)
 });

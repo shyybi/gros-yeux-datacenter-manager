@@ -1,7 +1,9 @@
 window.addEventListener('DOMContentLoaded', () => {
 	const fetchDataAndUpdate = async () => {
 		try {
+			console.log('Fetching server data...');
 			const data = await window.api.getServerData();
+			console.log('Server data fetched:', data);
 			const serverContainer = document.querySelector('.server-container');
 			if (serverContainer) {
 				serverContainer.innerHTML = ''; 
@@ -15,6 +17,7 @@ window.addEventListener('DOMContentLoaded', () => {
 								<p><strong>Name: </strong>${server.name}</p>
 								<p><strong>IP: </strong>${server.ip}</p>
 								<p><strong>Port: </strong>${server.port}</p>
+								<p><strong>SSH Sessions: </strong>${server.sshSessions}</p>
 							</div>
 							<div class="server-chart">
 								<canvas id="ramChart-${server.name}"></canvas>
@@ -31,9 +34,6 @@ window.addEventListener('DOMContentLoaded', () => {
 							<div class="server-chart">
 								<canvas id="networkChart-${server.name}"></canvas>
 								<p>Network Usage: ${(server.network[0].rx_sec / (1024 * 1024)).toFixed(2)}MB/s / ${(server.network[0].tx_sec / (1024 * 1024)).toFixed(2)}MB/s</p>
-							</div>
-							<div class="server-chart">
-								<p>SSH Sessions: ${server.sshSessions}</p>
 							</div>
 						`;
 						serverContainer.appendChild(serverElement);
@@ -140,6 +140,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 						setInterval(async () => {
 							try {
+								console.log('Fetching updated server data...');
 								const updatedData = await window.api.getServerData();
 								const updatedServer = updatedData.find(s => s.name === server.name);
 								if (updatedServer && !updatedServer.error) {
@@ -169,7 +170,9 @@ window.addEventListener('DOMContentLoaded', () => {
 
 	const updateServerList = async () => {
 		try {
+			console.log('Fetching server list...');
 			const servers = await window.api.getServers();
+			console.log('Server list fetched:', servers);
 			const serverList = document.getElementById('server-list');
 			if (serverList) {
 				serverList.innerHTML = '';
@@ -186,7 +189,9 @@ window.addEventListener('DOMContentLoaded', () => {
 					button.addEventListener('click', async (event) => {
 						const ip = event.target.getAttribute('data-ip');
 						try {
+							console.log(`Removing server with IP: ${ip}`);
 							const response = await window.api.removeServer(ip);
+							console.log('Server removed:', response);
 							if (response.success) {
 								await fetchDataAndUpdate();
 								await updateServerList();
@@ -219,12 +224,15 @@ window.addEventListener('DOMContentLoaded', () => {
 			
 			const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Request timed out')), 5000));
 			try {
+				console.log(`Adding server with name: ${name}, IP: ${ip}, Port: ${port}`);
 				const response = await Promise.race([window.api.addServer({ name, ip, port }), timeout]);
+				console.log('Server added:', response);
 				if (response.success) {
 					await fetchDataAndUpdate();
 					await updateServerList();
 					errorMessageElement.textContent = ''; 
 				} else {
+					console.error('Error response from API:', response.message);
 					errorMessageElement.textContent = "Error while fetching the server API's data";
 				}
 			} catch (error) {
@@ -246,12 +254,15 @@ window.addEventListener('DOMContentLoaded', () => {
 			
 			const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Request timed out')), 5000));
 			try {
+				console.log(`Removing server with IP: ${ip}`);
 				const response = await Promise.race([window.api.removeServer(ip), timeout]);
+				console.log('Server removed:', response);
 				if (response.success) {
 					await fetchDataAndUpdate();
 					await updateServerList();
 					errorMessageElement.textContent = ''; 
 				} else {
+					console.error('Error response from API:', response.message);
 					errorMessageElement.textContent = "Error while removing the server.";
 				}
 			} catch (error) {
