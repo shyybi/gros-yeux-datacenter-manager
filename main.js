@@ -1,13 +1,11 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const axios = require('axios');
-const fs = require('fs');
-//const serverManager = require('./serverManager');
-//const serverDetails = require('./serverDetails');
+const db = require('./database');
 
-let mainWindow; 
+let mainWindow;
 
-function createWindow () {
+function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1250,
     height: 825,
@@ -23,36 +21,34 @@ function createWindow () {
 }
 
 app.whenReady().then(() => {
-	createWindow()
-  
-	app.on('activate', () => {
-	  if (BrowserWindow.getAllWindows().length === 0) {
-		createWindow()
-	  }
-	})
-  })
-  app.on('window-all-closed', () => {
-	if (process.platform !== 'darwin') {
-	  app.quit()
-	}
-  })
+  createWindow();
 
-  ipcMain.handle('make-request', async (event, url) => {
-	try {
-	  const response = await axios.get(url);
-	  return response.data;
-	} catch (error) {
-	  console.error('Erreur lors de la requête:', error);
-	  throw error;
-	}
+  app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow();
+    }
   });
+});
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') {
+    app.quit();
+  }
+});
+
+ipcMain.handle('make-request', async (event, url) => {
+  try {
+    const response = await axios.get(url);
+    return response.data;
+  } catch (error) {
+    console.error('Erreur lors de la requête:', error);
+    throw error;
+  }
+});
 
 ipcMain.handle('add-server', async (event, server) => {
   try {
-    const data = fs.readFileSync(path.join(__dirname, 'app', 'servers.json'));
-    const servers = JSON.parse(data);
-    servers[server.ip] = server;
-    fs.writeFileSync(path.join(__dirname, 'app', 'servers.json'), JSON.stringify(servers, null, 2));
+    db.addServer(server);
     return { success: true };
   } catch (error) {
     console.error('Error adding server:', error);
@@ -62,10 +58,7 @@ ipcMain.handle('add-server', async (event, server) => {
 
 ipcMain.handle('remove-server', async (event, ip) => {
   try {
-    const data = fs.readFileSync(path.join(__dirname, 'app', 'servers.json'));
-    const servers = JSON.parse(data);
-    delete servers[ip];
-    fs.writeFileSync(path.join(__dirname, 'app', 'servers.json'), JSON.stringify(servers, null, 2));
+    db.removeServer(ip);
     return { success: true };
   } catch (error) {
     console.error('Error removing server:', error);
@@ -75,8 +68,7 @@ ipcMain.handle('remove-server', async (event, ip) => {
 
 ipcMain.handle('get-servers', async () => {
   try {
-    const data = fs.readFileSync(path.join(__dirname, 'app', 'servers.json'));
-    const servers = JSON.parse(data);
+    const servers = db.getServers();
     return servers;
   } catch (error) {
     console.error('Error getting servers:', error);
@@ -84,20 +76,9 @@ ipcMain.handle('get-servers', async () => {
   }
 });
 
-ipcMain.handle('get-server-details', async (event, ip) => {
-  try {
-    return serverDetails.getDetails(ip);
-  } catch (error) {
-    console.error('Error getting server details:', error);
-    throw error;
-  }
-});
-
 ipcMain.handle('get-server-data', async () => {
   try {
-    const data = fs.readFileSync(path.join(__dirname, 'app', 'servers.json'));
-    const servers = JSON.parse(data);
-
+    const servers = db.getServers();
     const serverDataPromises = Object.values(servers).map(async (server) => {
       try {
         const ramResponse = await axios.get(`http://${server.ip}:${server.port}/api/ram-usage`);
