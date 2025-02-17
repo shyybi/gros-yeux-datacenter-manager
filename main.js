@@ -71,16 +71,25 @@ ipcMain.handle('get-server-data', async () => {
 
     const serverDataPromises = Object.values(servers).map(async (server) => {
       try {
-        const response = await axios.get(`http://${server.ip}:${server.port}/api/ram-usage`);
+        const ramResponse = await axios.get(`http://${server.ip}:${server.port}/api/ram-usage`);
+        const cpuResponse = await axios.get(`http://${server.ip}:${server.port}/api/cpu-usage`);
+        const diskResponse = await axios.get(`http://${server.ip}:${server.port}/api/disk-usage`);
+        const networkResponse = await axios.get(`http://${server.ip}:${server.port}/api/network-usage`);
+        const sshResponse = await axios.get(`http://${server.ip}:${server.port}/api/ssh-sessions`);
+
         return {
           name: server.name,
           ip: server.ip,
           port: server.port,
           ram: {
-            current: (response.data.usedMemory / (1024 * 1024 * 1024)).toFixed(2) + 'GB',
-            max: (response.data.totalMemory / (1024 * 1024 * 1024)).toFixed(2) + 'GB',
-            usagePercentage: response.data.usagePercentage.toFixed(2) + '%'
-          }
+            current: (ramResponse.data.usedMemory / (1024 * 1024 * 1024)).toFixed(2) + 'GB',
+            max: (ramResponse.data.totalMemory / (1024 * 1024 * 1024)).toFixed(2) + 'GB',
+            usagePercentage: ramResponse.data.usagePercentage.toFixed(2) + '%'
+          },
+          cpu: cpuResponse.data,
+          disk: diskResponse.data,
+          network: networkResponse.data,
+          sshSessions: sshResponse.data.sshSessions
         };
       } catch (error) {
         console.error(`Error fetching data for server ${server.name}:`, error);
@@ -93,6 +102,10 @@ ipcMain.handle('get-server-data', async () => {
             max: '0GB',
             usagePercentage: '0%'
           },
+          cpu: {},
+          disk: [],
+          network: [],
+          sshSessions: 0
         };
       }
     });
