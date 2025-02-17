@@ -1,46 +1,51 @@
 const fs = require('fs');
 const path = require('path');
+const { app } = require('electron');
 
-const isDev = process.env.NODE_ENV !== 'production';
-const storagePath = isDev ? path.join(__dirname, 'servers.json') : path.join(app.getPath('userData'), 'servers.json');
+const getFilePath = () => {
+	const userDataPath = app.getPath('userData');
+	return path.join(userDataPath, 'servers.json');
+};
 
-function readData() {
-  if (!fs.existsSync(storagePath)) {
-    return {};
-  }
-  const data = fs.readFileSync(storagePath, 'utf-8');
-  return JSON.parse(data);
-}
+const readServers = () => {
+	const filePath = getFilePath();
+	if (!fs.existsSync(filePath)) {
+		return {};
+	}
+	const data = fs.readFileSync(filePath);
+	return JSON.parse(data);
+};
 
-function writeData(data) {
-  fs.writeFileSync(storagePath, JSON.stringify(data, null, 2), 'utf-8');
-}
+const writeServers = (servers) => {
+	const filePath = getFilePath();
+	fs.writeFileSync(filePath, JSON.stringify(servers, null, 2));
+};
 
-function addServer(server) {
-  const data = readData();
-  data[server.ip] = server;
-  writeData(data);
-}
+const addServer = (server) => {
+	const servers = readServers();
+	servers[server.ip] = server;
+	writeServers(servers);
+};
 
-function removeServer(ip) {
-  const data = readData();
-  delete data[ip];
-  writeData(data);
-}
+const removeServer = (ip) => {
+	const servers = readServers();
+	delete servers[ip];
+	writeServers(servers);
+};
 
-function getServers() {
-  return readData();
-}
+const getServers = () => {
+	return readServers();
+};
 
-function updateServer(server) {
-  const data = readData();
-  data[server.ip] = server;
-  writeData(data);
-}
+const updateServer = (server) => {
+	const servers = readServers();
+	servers[server.ip] = server;
+	writeServers(servers);
+};
 
 module.exports = {
-  addServer,
-  removeServer,
-  getServers,
-  updateServer
+	addServer,
+	removeServer,
+	getServers,
+	updateServer
 };

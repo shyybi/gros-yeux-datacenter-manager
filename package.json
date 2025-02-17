@@ -74,7 +74,8 @@
       "main.js",
       "preload.js",
       "app/**/*",
-      "servers.json"
+      "servers.json",
+      "storage.js"
     ]
   }
 }

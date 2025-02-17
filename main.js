@@ -13,7 +13,7 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      preload: path.join(__dirname, 'preload.js')
+      preload: path.join(__dirname, 'preload.js'),
     }
   });
 
@@ -48,7 +48,6 @@ ipcMain.handle('make-request', async (event, url) => {
 
 ipcMain.handle('add-server', async (event, server) => {
   try {
-    // Validate server by making a request to its API
     await axios.get(`http://${server.ip}:${server.port}/api/ram-usage`);
     storage.addServer(server);
     return { success: true };
@@ -126,7 +125,6 @@ ipcMain.handle('get-server-data', async () => {
 
 ipcMain.handle('update-server', async (event, server) => {
   try {
-    // Validate server by making a request to its API
     await axios.get(`http://${server.ip}:${server.port}/api/ram-usage`);
     storage.updateServer(server);
     return { success: true };
