@@ -32,7 +32,7 @@ body {
 	flex-direction: column;
 	justify-content: space-around;
 	align-items: baseline;
-	font-size: larger;
+	font-size: 24px;
 	flex: 1;
 }
 
@@ -45,7 +45,7 @@ body {
 
 .link {
 	color: #ffffff;
-	margin-bottom: 30px;
+	margin-bottom: 15px;
 	text-decoration: none;
 }
 
@@ -122,7 +122,7 @@ body {
 
 .server-form button {
   padding: 10px 20px;
-  background-color: #4CAF50;
+  background-color: #4ca5af;
   color: white;
   border: none;
   border-radius: 5px;
@@ -130,7 +130,7 @@ body {
 }
 
 .server-form button:hover {
-  background-color: #45a049;
+  background-color: #4571a0;
 }
 
 .server-list {
