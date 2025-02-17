@@ -47,12 +47,41 @@ app.whenReady().then(() => {
 	}
   });
 
-ipcMain.handle('add-server', async (event, { ip, machine }) => {
-  // soon
+ipcMain.handle('add-server', async (event, server) => {
+  try {
+    const data = fs.readFileSync(path.join(__dirname, 'app', 'servers.json'));
+    const servers = JSON.parse(data);
+    servers[server.ip] = server;
+    fs.writeFileSync(path.join(__dirname, 'app', 'servers.json'), JSON.stringify(servers, null, 2));
+    return { success: true };
+  } catch (error) {
+    console.error('Error adding server:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('remove-server', async (event, ip) => {
+  try {
+    const data = fs.readFileSync(path.join(__dirname, 'app', 'servers.json'));
+    const servers = JSON.parse(data);
+    delete servers[ip];
+    fs.writeFileSync(path.join(__dirname, 'app', 'servers.json'), JSON.stringify(servers, null, 2));
+    return { success: true };
+  } catch (error) {
+    console.error('Error removing server:', error);
+    throw error;
+  }
 });
 
 ipcMain.handle('get-servers', async () => {
-  // soon
+  try {
+    const data = fs.readFileSync(path.join(__dirname, 'app', 'servers.json'));
+    const servers = JSON.parse(data);
+    return servers;
+  } catch (error) {
+    console.error('Error getting servers:', error);
+    throw error;
+  }
 });
 
 ipcMain.handle('get-server-details', async (event, ip) => {
@@ -89,7 +118,8 @@ ipcMain.handle('get-server-data', async () => {
           cpu: cpuResponse.data,
           disk: diskResponse.data,
           network: networkResponse.data,
-          sshSessions: sshResponse.data.sshSessions
+          sshSessions: sshResponse.data.sshSessions,
+          error: false
         };
       } catch (error) {
         console.error(`Error fetching data for server ${server.name}:`, error);
@@ -97,15 +127,7 @@ ipcMain.handle('get-server-data', async () => {
           name: server.name,
           ip: server.ip,
           port: server.port,
-          ram: {
-            current: '0GB',
-            max: '0GB',
-            usagePercentage: '0%'
-          },
-          cpu: {},
-          disk: [],
-          network: [],
-          sshSessions: 0
+          error: true
         };
       }
     });

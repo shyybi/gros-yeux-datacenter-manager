@@ -35,12 +35,14 @@ body {
 	font-size: larger;
 	flex: 1;
 }
+
 .app-title {
 	color: #ffffff;
 	margin-bottom: 50px;
 	font-size: xx-large;
 	text-decoration: underline;
 }
+
 .link {
 	color: #ffffff;
 	margin-bottom: 30px;
@@ -105,6 +107,65 @@ body {
 	margin-top: 30px;
 	margin-bottom: 20px;
 	margin-right: 50px;
+}
+
+.server-form {
+  margin-top: 20px;
+}
+
+.server-form input {
+  margin: 5px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.server-form button {
+  padding: 10px 20px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.server-form button:hover {
+  background-color: #45a049;
+}
+
+.server-list {
+  margin-top: 20px;
+}
+
+.server-list ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.server-list li {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin: 5px 400px;
+  margin-left: -20px;
+
+  background-color: #2a2d34;
+  color: #ffffff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.delete-server-btn {
+  background: none;
+  border: none;
+  color: red;
+  font-size: 1.2em;
+  cursor: pointer;
+}
+
+.delete-server-btn:hover {
+  color: darkred;
 }
 
 @media (max-width: 768px) {
