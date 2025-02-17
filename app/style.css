@@ -53,16 +53,25 @@ body {
 	display: flex;
 	flex-direction: column;
 	margin-top: 20px;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-around;
 }
 
 .server-status-container {
 	background-color: #2a2d34;
 	padding: 10px;
-	margin-bottom: 10px;
+	margin: 10px;
 	border-radius: 5px;
 	color: #ffffff;
+	flex: 1 1 300px;
 }
 
 .server-status-container p {
 	margin: 5px 0;
+}
+
+.server-status-container canvas {
+	width: 100%;
+	height: 150px;
 }

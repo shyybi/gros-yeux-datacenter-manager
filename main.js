@@ -1,8 +1,9 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const axios = require('axios');
-const serverManager = require('./serverManager');
-const serverDetails = require('./serverDetails');
+const fs = require('fs');
+//const serverManager = require('./serverManager');
+//const serverDetails = require('./serverDetails');
 
 let mainWindow; 
 
@@ -12,8 +13,9 @@ function createWindow () {
     height: 825,
     frame: true,
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: path.join(__dirname, 'preload.js')
     }
   });
 
@@ -46,11 +48,11 @@ app.whenReady().then(() => {
   });
 
 ipcMain.handle('add-server', async (event, { ip, machine }) => {
-  // ...existing code...
+  // soon
 });
 
 ipcMain.handle('get-servers', async () => {
-  // ...existing code...
+  // soon
 });
 
 ipcMain.handle('get-server-details', async (event, ip) => {
@@ -58,6 +60,47 @@ ipcMain.handle('get-server-details', async (event, ip) => {
     return serverDetails.getDetails(ip);
   } catch (error) {
     console.error('Error getting server details:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('get-server-data', async () => {
+  try {
+    const data = fs.readFileSync(path.join(__dirname, 'app', 'servers.json'));
+    const servers = JSON.parse(data);
+
+    const serverDataPromises = Object.values(servers).map(async (server) => {
+      try {
+        const response = await axios.get(`http://${server.ip}:${server.port}/api/ram-usage`);
+        return {
+          name: server.name,
+          ip: server.ip,
+          port: server.port,
+          ram: {
+            current: (response.data.usedMemory / (1024 * 1024 * 1024)).toFixed(2) + 'GB',
+            max: (response.data.totalMemory / (1024 * 1024 * 1024)).toFixed(2) + 'GB',
+            usagePercentage: response.data.usagePercentage.toFixed(2) + '%'
+          }
+        };
+      } catch (error) {
+        console.error(`Error fetching data for server ${server.name}:`, error);
+        return {
+          name: server.name,
+          ip: server.ip,
+          port: server.port,
+          ram: {
+            current: '0GB',
+            max: '0GB',
+            usagePercentage: '0%'
+          },
+        };
+      }
+    });
+
+    const serverData = await Promise.all(serverDataPromises);
+    return serverData;
+  } catch (error) {
+    console.error('Error fetching server data:', error);
     throw error;
   }
 });

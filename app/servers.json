@@ -2,11 +2,11 @@
 	"favaro" : {
 		"name" : "favaro",
 		"ip" : "10.10.10.104",
-		"port" : "22"
+		"port" : "3000"
 	},
-	"elder" : {
-		"name" : "elder",
-		"ip" : "10.10.10.102",
-		"port" : "22"
+	"bunny" : {
+		"name" : "bunny",
+		"ip" : "localhost",
+		"port" : "3000"
 	}
 }
