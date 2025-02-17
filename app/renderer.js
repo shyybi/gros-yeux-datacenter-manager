@@ -15,6 +15,7 @@ window.addEventListener('DOMContentLoaded', () => {
 								<p><strong>Name: </strong>${server.name}</p>
 								<p><strong>IP: </strong>${server.ip}</p>
 								<p><strong>Port: </strong>${server.port}</p>
+								<p><strong>SSH Sessions: </strong>${server.sshSessions}</p>
 							</div>
 							<div class="server-chart">
 								<canvas id="ramChart-${server.name}"></canvas>
@@ -31,9 +32,6 @@ window.addEventListener('DOMContentLoaded', () => {
 							<div class="server-chart">
 								<canvas id="networkChart-${server.name}"></canvas>
 								<p>Network Usage: ${(server.network[0].rx_sec / (1024 * 1024)).toFixed(2)}MB/s / ${(server.network[0].tx_sec / (1024 * 1024)).toFixed(2)}MB/s</p>
-							</div>
-							<div class="server-chart">
-								<p>SSH Sessions: ${server.sshSessions}</p>
 							</div>
 						`;
 						serverContainer.appendChild(serverElement);
