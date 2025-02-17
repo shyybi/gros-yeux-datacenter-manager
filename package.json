@@ -19,7 +19,14 @@
     "build:linux": "electron-builder build --linux",
     "build:mac": "electron-builder build --mac"
   },
-  "keywords": ["Datacenter", "DevOps", "Sysadmin", "Managing", "Servers", "Servers Status"],
+  "keywords": [
+    "Datacenter",
+    "DevOps",
+    "Sysadmin",
+    "Managing",
+    "Servers",
+    "Servers Status"
+  ],
   "license": "ISC",
   "description": "Just a Dashboard to manage my server room",
   "devDependencies": {
@@ -27,7 +34,8 @@
     "electron-builder": "^24.9.1"
   },
   "dependencies": {
-    "axios": "^1.7.7"
+    "axios": "^1.7.7",
+    "better-sqlite3": "^8.0.1"
   },
   "build": {
     "appId": "me.minidashboard.shyybi",
@@ -60,6 +68,13 @@
       "provider": "github",
       "owner": "shyybi",
       "repo": "mini-datacenter-dashboard-manager"
-    }
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "app/**/*",
+      "servers.json",
+      "database.js"
+    ]
   }
 }
