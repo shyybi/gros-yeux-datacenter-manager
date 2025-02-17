@@ -48,11 +48,13 @@ ipcMain.handle('make-request', async (event, url) => {
 
 ipcMain.handle('add-server', async (event, server) => {
   try {
+    // Validate server by making a request to its API
+    await axios.get(`http://${server.ip}:${server.port}/api/ram-usage`);
     db.addServer(server);
     return { success: true };
   } catch (error) {
     console.error('Error adding server:', error);
-    throw error;
+    return { success: false, message: 'Error fetching the server API data' };
   }
 });
 
@@ -113,7 +115,7 @@ ipcMain.handle('get-server-data', async () => {
       }
     });
 
-    const serverData = await Promise.all(serverDataPromises);
+    const serverData = (await Promise.all(serverDataPromises)).filter(server => !server.error);
     return serverData;
   } catch (error) {
     console.error('Error fetching server data:', error);
