@@ -22,13 +22,22 @@
 		</div>
 		<!-- Here is the wide side-->
 		<div class="wide-side" id="wide-side">
-			<h1>Server Status</h1>
-			<div class="server-container">
-				<!-- Server information will be injected here -->
+			<h1>Server Settings</h1>
+			<div class="server-form">
+				<h2>Add Server</h2>
+				<input type="text" id="server-name" placeholder="Server Name">
+				<input type="text" id="server-ip" placeholder="Server IP">
+				<input type="text" id="server-port" placeholder="Server Port">
+				<button id="add-server-btn">Add Server</button>
+			</div>
+			<div class="server-list">
+				<h2>Current Servers</h2>
+				<ul id="server-list">
+					<!-- Server list will be injected here -->
+				</ul>
 			</div>
 		</div>
 	</div>
 </body>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="renderer.js"></script>
 </html>

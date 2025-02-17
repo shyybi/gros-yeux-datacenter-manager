@@ -5,11 +5,17 @@ body {
     padding: 0;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
+
+/** How do we print the page **/
+
 .page-order {
 	display: flex;
 	flex-direction: row;
-	align-items: baseline;
+	align-items: flex-start;
+	flex-wrap: wrap;
 }
+
+/** Just the navbar here**/
 .left-side {
 	background-color: rgb(50, 49, 46);
 	width: 240px;
@@ -17,26 +23,164 @@ body {
 	display: flex;
 	flex-direction: column;
 	justify-content: space-between;
+	position: fixed;
 }
 .navbar {
 	margin-top: 50px;
+	margin-left: 30px;
 	display: flex;
 	flex-direction: column;
 	justify-content: space-around;
-	align-items: center;
+	align-items: baseline;
 	font-size: larger;
+	flex: 1;
+}
+
+.app-title {
+	color: #ffffff;
+	margin-bottom: 50px;
+	font-size: xx-large;
+	text-decoration: underline;
 }
 
 .link {
 	color: #ffffff;
+	margin-bottom: 30px;
 	text-decoration: none;
-	margin-bottom: 50px;
 }
 
 .credit {
+	margin-top: auto;
 	margin-bottom: 25px;
 }
+
+/** Just the big side here**/
+
 .wide-side {
 	display: flex;
-	background-color: #282c34;
+	flex-direction: column;
+	flex: 1;
+	margin-left: 270px; /* Adjusted to account for fixed left-side */
+}
+
+.server-container {
+	display: flex;
+	flex-direction: column;
+	margin-top: 20px;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-around;
+}
+
+.server-status-container {
+	width: auto;
+	background-color: #2a2d34;
+	padding: 10px;
+	margin: 10px;
+	border-radius: 5px;
+	color: #ffffff;
+	display: flex;
+	flex-direction: column;
+}
+
+.server-info {
+	margin-bottom: 20px;
+	margin-right: 50px;
+}
+
+.server-status-container {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+}
+
+.server-status-container p {
+	margin: 5px 0;
+}
+
+.server-status-container canvas {
+	width: 100%;
+	height: 150px;
+}
+
+.server-chart {
+	margin-top: 30px;
+	margin-bottom: 20px;
+	margin-right: 50px;
+}
+
+.server-form {
+  margin-top: 20px;
+}
+
+.server-form input {
+  margin: 5px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.server-form button {
+  padding: 10px 20px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.server-form button:hover {
+  background-color: #45a049;
+}
+
+.server-list {
+  margin-top: 20px;
+}
+
+.server-list ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.server-list li {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin: 5px 400px;
+  margin-left: -20px;
+
+  background-color: #2a2d34;
+  color: #ffffff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.delete-server-btn {
+  background: none;
+  border: none;
+  color: red;
+  font-size: 1.2em;
+  cursor: pointer;
+}
+
+.delete-server-btn:hover {
+  color: darkred;
+}
+
+@media (max-width: 768px) {
+	.left-side {
+		width: 100%;
+		height: auto;
+		position: static;
+	}
+	.page-order {
+		flex-direction: column;
+	}
+	.wide-side {
+		margin-left: 0;
+	}
+	.server-status-container {
+		width: 100%;
+	}
 }
