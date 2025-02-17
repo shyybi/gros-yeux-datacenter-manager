@@ -1,7 +1,7 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const axios = require('axios');
-const db = require('./database');
+const storage = require('./storage');
 
 let mainWindow;
 
@@ -50,7 +50,7 @@ ipcMain.handle('add-server', async (event, server) => {
   try {
     // Validate server by making a request to its API
     await axios.get(`http://${server.ip}:${server.port}/api/ram-usage`);
-    db.addServer(server);
+    storage.addServer(server);
     return { success: true };
   } catch (error) {
     console.error('Error adding server:', error);
@@ -60,7 +60,7 @@ ipcMain.handle('add-server', async (event, server) => {
 
 ipcMain.handle('remove-server', async (event, ip) => {
   try {
-    db.removeServer(ip);
+    storage.removeServer(ip);
     return { success: true };
   } catch (error) {
     console.error('Error removing server:', error);
@@ -68,9 +68,9 @@ ipcMain.handle('remove-server', async (event, ip) => {
   }
 });
 
-ipcMain.handle('get-servers', async () => {
+ipcMain.handle('get-servers', (event) => {
   try {
-    const servers = db.getServers();
+    const servers = storage.getServers();
     return servers;
   } catch (error) {
     console.error('Error getting servers:', error);
@@ -80,7 +80,8 @@ ipcMain.handle('get-servers', async () => {
 
 ipcMain.handle('get-server-data', async () => {
   try {
-    const servers = db.getServers();
+    const servers = storage.getServers();
+
     const serverDataPromises = Object.values(servers).map(async (server) => {
       try {
         const ramResponse = await axios.get(`http://${server.ip}:${server.port}/api/ram-usage`);
@@ -120,5 +121,17 @@ ipcMain.handle('get-server-data', async () => {
   } catch (error) {
     console.error('Error fetching server data:', error);
     throw error;
+  }
+});
+
+ipcMain.handle('update-server', async (event, server) => {
+  try {
+    // Validate server by making a request to its API
+    await axios.get(`http://${server.ip}:${server.port}/api/ram-usage`);
+    storage.updateServer(server);
+    return { success: true };
+  } catch (error) {
+    console.error('Error updating server:', error);
+    return { success: false, message: 'Error fetching the server API data' };
   }
 });

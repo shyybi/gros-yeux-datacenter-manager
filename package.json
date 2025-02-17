@@ -1,6 +1,6 @@
 {
   "name": "mini-datacenter-dashboard-manager",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "main": "main.js",
   "homepage": "https://github.com/shyybi/mini-datacenter-dashboard-manager.git",
   "repository": {
@@ -13,11 +13,13 @@
   },
   "scripts": {
     "start": "electron .",
+    "start:debug": "electron --inspect=5858 .",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "electron-builder build --win --linux --mac",
     "build:win": "electron-builder build --win",
     "build:linux": "electron-builder build --linux",
-    "build:mac": "electron-builder build --mac"
+    "build:mac": "electron-builder build --mac",
+    "run": "electron ."
   },
   "keywords": [
     "Datacenter",
@@ -34,12 +36,11 @@
     "electron-builder": "^24.9.1"
   },
   "dependencies": {
-    "axios": "^1.7.7",
-    "better-sqlite3": "^8.0.1"
+    "axios": "^1.7.7"
   },
   "build": {
     "appId": "me.minidashboard.shyybi",
-    "productName": "Gros'Yeux - Server Manager",
+    "productName": "GrosYeux",
     "win": {
       "target": [
         {
@@ -73,8 +74,7 @@
       "main.js",
       "preload.js",
       "app/**/*",
-      "servers.json",
-      "database.js"
+      "servers.json"
     ]
   }
 }
