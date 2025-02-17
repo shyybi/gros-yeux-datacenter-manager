@@ -156,6 +156,12 @@ body {
   align-items: center;
   margin-bottom: 10px;
 }
+
+.error-message {
+	color: red;
+	margin-top: 10px;
+}
+
 .delete-server-btn {
   background: none;
   border: none;
