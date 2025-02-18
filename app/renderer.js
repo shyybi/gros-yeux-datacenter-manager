@@ -275,4 +275,75 @@ window.addEventListener('DOMContentLoaded', () => {
 			}, 5000);
 		});
 	}
+
+	const populateServerDropdown = async () => {
+		try {
+			const servers = await window.api.getServers();
+			const serverSelect = document.getElementById('server-select');
+			if (serverSelect) {
+				serverSelect.innerHTML = '';
+				Object.values(servers).forEach(server => {
+					const option = document.createElement('option');
+					option.value = server.name;
+					option.textContent = `${server.name} (${server.ip}:${server.port})`;
+					serverSelect.appendChild(option);
+				});
+			}
+		} catch (error) {
+			console.error('Error populating server dropdown:', error);
+		}
+	};
+
+	const displaySshSessions = async (serverName) => {
+		try {
+			const servers = await window.api.getServers();
+			const serverList = Array.isArray(servers) ? servers : Object.values(servers);
+			const server = serverList.find(s => s.name === serverName);
+			if (!server) {
+				throw new Error('Server not found');
+			}
+			const response = await fetch(`http://${server.ip}:${server.port}/api/last-user`);
+			const lastUser = await response.json();
+			const sshSessionsContainer = document.getElementById('ssh-sessions-container');
+			if (sshSessionsContainer) {
+				sshSessionsContainer.innerHTML = '';
+				if (lastUser) {
+					const sessionElement = document.createElement('div');
+					sessionElement.classList.add('ssh-session');
+					sessionElement.innerHTML = `
+						<p><strong>User: </strong>${lastUser.user}</p>
+						<p><strong>IP: </strong>${lastUser.ip}</p>
+						<p><strong>Hostname: </strong>${lastUser.hostname}</p>
+						<p><strong>Location: </strong>${lastUser.location}</p>
+						<p><strong>Start Time: </strong>${new Date(lastUser.startTime).toLocaleString()}</p>
+						<p><strong>End Time: </strong>${lastUser.endTime !== 'N/A' ? new Date(lastUser.endTime).toLocaleString() : 'Ongoing'}</p>
+					`;
+					sshSessionsContainer.appendChild(sessionElement);
+				} else {
+					sshSessionsContainer.innerHTML = '<p>No SSH sessions found.</p>';
+				}
+			}
+		} catch (error) {
+			console.error('Error displaying SSH sessions:', error);
+		}
+	};
+
+	const serverSelect = document.getElementById('server-select');
+	if (serverSelect) {
+		serverSelect.addEventListener('change', (event) => {
+			const selectedServer = event.target.value;
+			displaySshSessions(selectedServer);
+		});
+	}
+
+	const initializeLogsPage = async () => {
+		await populateServerDropdown();
+		if (serverSelect && serverSelect.value) {
+			await displaySshSessions(serverSelect.value);
+		}
+	};
+
+	if (document.body.contains(document.getElementById('server-select'))) {
+		initializeLogsPage();
+	}
 });

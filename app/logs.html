@@ -23,11 +23,22 @@
 		</div>
 		<!-- Here is the wide side-->
 		<div class="wide-side" id="wide-side">
-			<h1>Server Status</h1>
-			<div class="content-container">
-				<div class="server-container">
-					<!-- Server information will be injected here -->
-				</div>
+			<h1>Service Log</h1>
+			<div>
+					<select id="server-select">
+					<!-- Options will be populated dynamically -->
+				</select>
+			</div>
+			<div>
+				<select>
+					<option>SSH Sessions</option>
+					<option>Nertwork Usage</option>
+					<option>Ram Usage</option>
+					<option>CPU Usage</option>
+				</select>
+			</div>
+			<div class="content-container" id="ssh-sessions-container">
+				<!-- SSH sessions will be displayed here -->
 			</div>
 		</div>
 	</div>

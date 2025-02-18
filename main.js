@@ -88,7 +88,7 @@ ipcMain.handle('get-server-data', async () => {
         const diskResponse = await axios.get(`http://${server.ip}:${server.port}/api/disk-usage`);
         const networkResponse = await axios.get(`http://${server.ip}:${server.port}/api/network-usage`);
         const sshResponse = await axios.get(`http://${server.ip}:${server.port}/api/ssh-sessions`);
-
+		
         return {
           name: server.name,
           ip: server.ip,

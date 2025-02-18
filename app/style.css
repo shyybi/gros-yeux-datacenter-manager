@@ -73,6 +73,12 @@ body {
 	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
+.header {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+}
+
 .server-container {
 	display: flex;
 	flex-direction: column;
@@ -218,4 +224,27 @@ body {
 	padding: 20px;
 	border-radius: 8px;
 	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+#server-select {
+	margin: 20px 0;
+	padding: 10px;
+	border: 1px solid #ccc;
+	border-radius: 5px;
+	background-color: #2a2d34;
+	color: #ffffff;
+}
+
+.ssh-session {
+	background-color: #2a2d34;
+	padding: 10px;
+	margin: 10px 0;
+	border-radius: 5px;
+	color: #ffffff;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+	transition: transform 0.3s ease;
+}
+
+.ssh-session:hover {
+	transform: translateY(-5px);
 }
