@@ -2,13 +2,13 @@ const fs = require('fs');
 const path = require('path');
 const { app } = require('electron');
 
-const getFilePath = () => {
+const getFilePath = (filename) => {
 	const userDataPath = app.getPath('userData');
-	return path.join(userDataPath, 'servers.json');
+	return path.join(userDataPath, filename);
 };
 
-const readServers = () => {
-	const filePath = getFilePath();
+const readData = (filename) => {
+	const filePath = getFilePath(filename);
 	if (!fs.existsSync(filePath)) {
 		return {};
 	}
@@ -16,10 +16,19 @@ const readServers = () => {
 	return JSON.parse(data);
 };
 
-const writeServers = (servers) => {
-	const filePath = getFilePath();
-	fs.writeFileSync(filePath, JSON.stringify(servers, null, 2));
+const writeData = (filename, data) => {
+	const filePath = getFilePath(filename);
+	fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 };
+
+const readServers = () => readData('servers.json');
+const writeServers = (servers) => writeData('servers.json', servers);
+
+const readSshSessions = () => readData('ssh_sessions.json');
+const writeSshSessions = (sessions) => writeData('ssh_sessions.json', sessions);
+
+const readSshLogs = () => readData('ssh-logs.json');
+const writeSshLogs = (logs) => writeData('ssh-logs.json', logs);
 
 const addServer = (server) => {
 	const servers = readServers();
@@ -33,9 +42,7 @@ const removeServer = (ip) => {
 	writeServers(servers);
 };
 
-const getServers = () => {
-	return readServers();
-};
+const getServers = () => readServers();
 
 const updateServer = (server) => {
 	const servers = readServers();
@@ -43,9 +50,35 @@ const updateServer = (server) => {
 	writeServers(servers);
 };
 
+const addSshSession = (session) => {
+	const sessions = readSshSessions();
+	if (!sessions[session.serverName]) {
+		sessions[session.serverName] = [];
+	}
+	sessions[session.serverName].push(session);
+	writeSshSessions(sessions);
+};
+
+const getSshSessions = (serverName) => {
+	const sessions = readSshSessions();
+	return sessions[serverName] || [];
+};
+
+const addSshLog = (log) => {
+	const logs = readSshLogs();
+	logs.push(log);
+	writeSshLogs(logs);
+};
+
+const getSshLogs = () => readSshLogs();
+
 module.exports = {
 	addServer,
 	removeServer,
 	getServers,
-	updateServer
+	updateServer,
+	addSshSession,
+	getSshSessions,
+	addSshLog,
+	getSshLogs
 };

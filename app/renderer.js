@@ -8,8 +8,10 @@ window.addEventListener('DOMContentLoaded', () => {
 			if (serverContainer) {
 				serverContainer.innerHTML = ''; 
 
-				data.forEach(server => {
+				for (const server of data) {
 					if (!server.error) {
+						const sshSessions = Array.isArray(server.sshSessions) ? server.sshSessions.map(session => `${session.user} (${session.ip})`).join(', ') : 'No SSH sessions';
+
 						const serverElement = document.createElement('div');
 						serverElement.classList.add('server-status-container');
 						serverElement.innerHTML = `
@@ -17,23 +19,26 @@ window.addEventListener('DOMContentLoaded', () => {
 								<p><strong>Name: </strong>${server.name}</p>
 								<p><strong>IP: </strong>${server.ip}</p>
 								<p><strong>Port: </strong>${server.port}</p>
-								<p><strong>SSH Sessions: </strong>${server.sshSessions}</p>
+								<p><strong>SSH Sessions: </strong>${Array.isArray(server.sshSessions) ? server.sshSessions.length : 0}</p>
+								<p><strong>CPU Temperature: </strong><span id="cpuTemp-${server.name}">Loading...</span>°C</p>
 							</div>
-							<div class="server-chart">
-								<canvas id="ramChart-${server.name}"></canvas>
-								<p>Usage Percentage: ${server.ram.usagePercentage}</p>
-							</div>
-							<div class="server-chart">
-								<canvas id="cpuChart-${server.name}"></canvas>
-								<p>CPU Usage: ${server.cpu.currentLoad.toFixed(2)}%</p>
-							</div>
-							<div class="server-chart">
-								<canvas id="diskChart-${server.name}"></canvas>
-								<p>Disk Usage: ${(server.disk[0].used / (1024 * 1024 * 1024)).toFixed(2)}GB / ${(server.disk[0].size / (1024 * 1024 * 1024)).toFixed(2)}GB</p>
-							</div>
-							<div class="server-chart">
-								<canvas id="networkChart-${server.name}"></canvas>
-								<p>Network Usage: ${(server.network[0].rx_sec / (1024 * 1024)).toFixed(2)}MB/s / ${(server.network[0].tx_sec / (1024 * 1024)).toFixed(2)}MB/s</p>
+							<div class="chart-container"> 
+								<div class="server-chart">
+									<canvas id="ramChart-${server.name}"></canvas>
+									<p>Usage Percentage: ${server.ram.usagePercentage}</p>
+								</div>
+								<div class="server-chart">
+									<canvas id="cpuChart-${server.name}"></canvas>
+									<p>CPU Usage: ${server.cpu.currentLoad.toFixed(2)}%</p>
+								</div>
+								<div class="server-chart">
+									<canvas id="diskChart-${server.name}"></canvas>
+									<p>Disk Usage: ${(server.disk[0].used / (1024 * 1024 * 1024)).toFixed(2)}GB / ${(server.disk[0].size / (1024 * 1024 * 1024)).toFixed(2)}GB</p>
+								</div>
+								<div class="server-chart">
+									<canvas id="networkChart-${server.name}"></canvas>
+									<p>Network Usage: ${(server.network[0].rx_sec / (1024 * 1024)).toFixed(2)}MB/s / ${(server.network[0].tx_sec / (1024 * 1024)).toFixed(2)}MB/s</p>
+								</div>
 							</div>
 						`;
 						serverContainer.appendChild(serverElement);
@@ -138,6 +143,15 @@ window.addEventListener('DOMContentLoaded', () => {
 							}
 						});
 
+						try {
+							const tempResponse = await fetch(`http://${server.ip}:${server.port}/api/cpu-temperature`);
+							const cpuTemp = await tempResponse.json();
+							document.getElementById(`cpuTemp-${server.name}`).textContent = cpuTemp.temperature;
+						} catch (error) {
+							console.error('Error fetching CPU temperature:', error);
+							document.getElementById(`cpuTemp-${server.name}`).textContent = 'Error';
+						}
+
 						setInterval(async () => {
 							try {
 								console.log('Fetching updated server data...');
@@ -155,13 +169,17 @@ window.addEventListener('DOMContentLoaded', () => {
 
 									networkChart.data.datasets[0].data = [parseFloat(updatedServer.network[0].rx_sec / (1024 * 1024)), parseFloat(updatedServer.network[0].tx_sec / (1024 * 1024))];
 									networkChart.update();
+
+									const tempResponse = await fetch(`http://${updatedServer.ip}:${updatedServer.port}/api/cpu-temperature`);
+									const cpuTemp = await tempResponse.json();
+									document.getElementById(`cpuTemp-${updatedServer.name}`).textContent = cpuTemp.temperature;
 								}
 							} catch (error) {
 								console.error('Error fetching updated server data:', error);
 							}
-						}, 5000);
+						}, 1000);
 					}
-				});
+				}
 			}
 		} catch (error) {
 			console.error('Error fetching server data:', error);
@@ -296,32 +314,30 @@ window.addEventListener('DOMContentLoaded', () => {
 
 	const displaySshSessions = async (serverName) => {
 		try {
-			const servers = await window.api.getServers();
-			const serverList = Array.isArray(servers) ? servers : Object.values(servers);
-			const server = serverList.find(s => s.name === serverName);
-			if (!server) {
-				throw new Error('Server not found');
-			}
-			const response = await fetch(`http://${server.ip}:${server.port}/api/last-user`);
-			const lastUser = await response.json();
+			const sessions = await window.api.getSshSessions(serverName);
 			const sshSessionsContainer = document.getElementById('ssh-sessions-container');
 			if (sshSessionsContainer) {
-				sshSessionsContainer.innerHTML = '';
-				if (lastUser) {
-					const sessionElement = document.createElement('div');
-					sessionElement.classList.add('ssh-session');
-					sessionElement.innerHTML = `
-						<p><strong>User: </strong>${lastUser.user}</p>
-						<p><strong>IP: </strong>${lastUser.ip}</p>
-						<p><strong>Hostname: </strong>${lastUser.hostname}</p>
-						<p><strong>Location: </strong>${lastUser.location}</p>
-						<p><strong>Start Time: </strong>${new Date(lastUser.startTime).toLocaleString()}</p>
-						<p><strong>End Time: </strong>${lastUser.endTime !== 'N/A' ? new Date(lastUser.endTime).toLocaleString() : 'Ongoing'}</p>
-					`;
-					sshSessionsContainer.appendChild(sessionElement);
-				} else {
-					sshSessionsContainer.innerHTML = '<p>No SSH sessions found.</p>';
-				}
+				sshSessionsContainer.classList.add('falling-animation');
+				setTimeout(() => {
+					sshSessionsContainer.classList.remove('falling-animation');
+					sshSessionsContainer.innerHTML = '';
+					if (sessions.length > 0) {
+						sessions.forEach(session => {
+							const sessionElement = document.createElement('div');
+							sessionElement.classList.add('ssh-session');
+							sessionElement.innerHTML = `
+								<p><strong>User: </strong>${session.user}</p>
+								<p><strong>IP: </strong>${session.ip}</p>
+								<p><strong>Location: </strong>${session.location}</p>
+								<p><strong>Start Time: </strong>${new Date(session.startTime).toLocaleString()}</p>
+								<p><strong>End Time: </strong>${session.endTime !== 'N/A' ? new Date(session.endTime).toLocaleString() : 'Ongoing'}</p>
+							`;
+							sshSessionsContainer.appendChild(sessionElement);
+						});
+					} else {
+						sshSessionsContainer.innerHTML = '<p>No SSH sessions found.</p>';
+					}
+				}, 500); // Duration of the animation
 			}
 		} catch (error) {
 			console.error('Error displaying SSH sessions:', error);
@@ -346,4 +362,29 @@ window.addEventListener('DOMContentLoaded', () => {
 	if (document.body.contains(document.getElementById('server-select'))) {
 		initializeLogsPage();
 	}
+
+	const displaySshLogs = async (server) => {
+		try {
+			const logs = await window.api.getLastUser(server);
+			const sshLogsContainer = document.getElementById('ssh-logs-container');
+			if (sshLogsContainer) {
+				sshLogsContainer.innerHTML = '';
+				logs.forEach(log => {
+					const logElement = document.createElement('div');
+					logElement.classList.add('ssh-log');
+					logElement.innerHTML = `
+						<p><strong>User: </strong>${log.user}</p>
+						<p><strong>IP: </strong>${log.ip}</p>
+						<p><strong>Time: </strong>${new Date(log.time).toLocaleString()}</p>
+					`;
+					sshLogsContainer.appendChild(logElement);
+				});
+			}
+		} catch (error) {
+			console.error('Error displaying SSH logs:', error);
+		}
+	};
+
+	const server = { ip: '10.10.10.104', port: '3000' }; // Example server details
+	displaySshLogs(server);
 });

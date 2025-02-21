@@ -81,14 +81,16 @@ ipcMain.handle('get-server-data', async () => {
   try {
     const servers = storage.getServers();
 
-    const serverDataPromises = Object.values(servers).map(async (server) => {
+    const fetchData = async (server) => {
       try {
-        const ramResponse = await axios.get(`http://${server.ip}:${server.port}/api/ram-usage`);
-        const cpuResponse = await axios.get(`http://${server.ip}:${server.port}/api/cpu-usage`);
-        const diskResponse = await axios.get(`http://${server.ip}:${server.port}/api/disk-usage`);
-        const networkResponse = await axios.get(`http://${server.ip}:${server.port}/api/network-usage`);
-        const sshResponse = await axios.get(`http://${server.ip}:${server.port}/api/ssh-sessions`);
-		
+        const [ramResponse, cpuResponse, diskResponse, networkResponse, sshResponse] = await Promise.all([
+          axios.get(`http://${server.ip}:${server.port}/api/ram-usage`),
+          axios.get(`http://${server.ip}:${server.port}/api/cpu-usage`),
+          axios.get(`http://${server.ip}:${server.port}/api/disk-usage`),
+          axios.get(`http://${server.ip}:${server.port}/api/network-usage`),
+          axios.get(`http://${server.ip}:${server.port}/api/ssh-sessions`)
+        ]);
+
         return {
           name: server.name,
           ip: server.ip,
@@ -113,8 +115,9 @@ ipcMain.handle('get-server-data', async () => {
           error: true
         };
       }
-    });
+    };
 
+    const serverDataPromises = Object.values(servers).map(fetchData);
     const serverData = (await Promise.all(serverDataPromises)).filter(server => !server.error);
     return serverData;
   } catch (error) {
@@ -131,5 +134,46 @@ ipcMain.handle('update-server', async (event, server) => {
   } catch (error) {
     console.error('Error updating server:', error);
     return { success: false, message: 'Error fetching the server API data' };
+  }
+});
+
+ipcMain.handle('get-ssh-sessions', (event, serverName) => {
+  try {
+    const sessions = storage.getSshSessions(serverName);
+    return sessions;
+  } catch (error) {
+    console.error('Error getting SSH sessions:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('add-ssh-session', (event, session) => {
+  try {
+    storage.addSshSession(session);
+    return { success: true };
+  } catch (error) {
+    console.error('Error adding SSH session:', error);
+    return { success: false, message: 'Error adding SSH session' };
+  }
+});
+
+ipcMain.handle('get-last-user', async (event, server) => {
+  try {
+    const response = await axios.get(`http://${server.ip}:${server.port}/api/last-user`);
+    storage.addSshLog(response.data); // Log the SSH connection
+    return [response.data]; // Ensure it returns an array
+  } catch (error) {
+    console.error('Error fetching last user data:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('get-ssh-logs', (event) => {
+  try {
+    const logs = storage.getSshLogs();
+    return logs;
+  } catch (error) {
+    console.error('Error getting SSH logs:', error);
+    throw error;
   }
 });

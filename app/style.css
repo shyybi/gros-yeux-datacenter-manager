@@ -70,7 +70,6 @@ body {
 	margin-left: 270px; /* Adjusted to account for fixed left-side */
 	padding: 20px;
 	border-radius: 8px;
-	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .header {
@@ -95,7 +94,8 @@ body {
 	border-radius: 5px;
 	color: #ffffff;
 	display: flex;
-	flex-direction: column;
+	flex-direction: row;
+	align-items: center;
 	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 	transition: transform 0.3s ease;
 }
@@ -104,15 +104,13 @@ body {
 	transform: translateY(-5px);
 }
 
-.server-info {
-	margin-bottom: 20px;
-	margin-right: 50px;
-}
 
 .server-status-container {
 	display: flex;
 	flex-direction: row;
 	flex-wrap: wrap;
+	border: 1px solid #ccc;
+	border-radius: 5px;
 }
 
 .server-status-container p {
@@ -124,6 +122,18 @@ body {
 	height: 150px;
 }
 
+.server-info {
+	margin-bottom: 20px;
+	margin-right: 50px;
+	display: flex;
+	flex-direction: column;
+
+}
+
+.chart-container {
+	display: flex;
+	flex-direction: row;
+}
 .server-chart {
 	margin-top: 30px;
 	margin-bottom: 20px;
@@ -222,8 +232,6 @@ body {
 
 .content-container {
 	padding: 20px;
-	border-radius: 8px;
-	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 #server-select {
@@ -247,4 +255,19 @@ body {
 
 .ssh-session:hover {
 	transform: translateY(-5px);
+}
+
+.falling-animation {
+	animation: fall 0.5s ease-out;
+}
+
+@keyframes fall {
+	0% {
+		transform: translateY(0);
+		opacity: 1;
+	}
+	100% {
+		transform: translateY(100%);
+		opacity: 0;
+	}
 }
