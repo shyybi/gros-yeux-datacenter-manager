@@ -1,6 +1,3 @@
-import { Terminal } from 'xterm';
-import 'xterm/css/xterm.css';
-
 window.addEventListener('DOMContentLoaded', () => {
 	const fetchDataAndUpdate = async () => {
 		try {
@@ -192,7 +189,7 @@ window.addEventListener('DOMContentLoaded', () => {
 	const updateServerList = async () => {
 		try {
 			console.log('Fetching server list...');
-			const servers = await window.api.getServers();
+			const servers = await window.api.getServers(); // Ensure this calls storage.js
 			console.log('Server list fetched:', servers);
 			const serverList = document.getElementById('server-list');
 			if (serverList) {
@@ -200,9 +197,6 @@ window.addEventListener('DOMContentLoaded', () => {
 				Object.values(servers).forEach(server => {
 					const listItem = document.createElement('li');
 					listItem.innerHTML = `${server.name} (${server.ip}:${server.port}) <button class="delete-server-btn" data-ip="${server.ip}">❌</button>`;
-					if (server.error) {
-						listItem.innerHTML = `[ERROR] ${listItem.innerHTML}`;
-					}
 					serverList.appendChild(listItem);
 				});
 
@@ -214,7 +208,6 @@ window.addEventListener('DOMContentLoaded', () => {
 							const response = await window.api.removeServer(ip);
 							console.log('Server removed:', response);
 							if (response.success) {
-								await fetchDataAndUpdate();
 								await updateServerList();
 							}
 						} catch (error) {
@@ -242,28 +235,29 @@ window.addEventListener('DOMContentLoaded', () => {
 			const ip = document.getElementById('server-ip').value;
 			const port = document.getElementById('server-port').value;
 			const errorMessageElement = document.getElementById('add-server-error');
-			
-			const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Request timed out')), 5000));
+
+			console.log('Add Server Button Clicked'); // Debugging
+			console.log(`Name: ${name}, IP: ${ip}, Port: ${port}`); // Debugging
+
+			if (!name || !ip || !port) {
+				errorMessageElement.textContent = 'Please fill in all fields.';
+				return;
+			}
+
 			try {
-				console.log(`Adding server with name: ${name}, IP: ${ip}, Port: ${port}`);
-				const response = await Promise.race([window.api.addServer({ name, ip, port }), timeout]);
-				console.log('Server added:', response);
+				const response = await window.api.addServer({ name, ip, port });
+				console.log('Response from addServer:', response); // Debugging
 				if (response.success) {
 					await fetchDataAndUpdate();
 					await updateServerList();
-					errorMessageElement.textContent = ''; 
+					errorMessageElement.textContent = '';
 				} else {
-					console.error('Error response from API:', response.message);
-					errorMessageElement.textContent = "Error while fetching the server API's data";
+					errorMessageElement.textContent = response.message || 'Error adding server.';
 				}
 			} catch (error) {
 				console.error('Error adding server:', error);
-				errorMessageElement.textContent = 'An error occurred while adding the server. Is the API working correctly?';
+				errorMessageElement.textContent = 'An error occurred while adding the server.';
 			}
-
-			setTimeout(() => {
-				errorMessageElement.textContent = '';
-			}, 5000);
 		});
 	}
 
@@ -365,61 +359,4 @@ window.addEventListener('DOMContentLoaded', () => {
 	if (document.body.contains(document.getElementById('server-select'))) {
 		initializeLogsPage();
 	}
-
-	const displaySshLogs = async (server) => {
-		try {
-			const logs = await window.api.getLastUser(server);
-			const sshLogsContainer = document.getElementById('ssh-logs-container');
-			if (sshLogsContainer) {
-				sshLogsContainer.innerHTML = '';
-				logs.forEach(log => {
-					const logElement = document.createElement('div');
-					logElement.classList.add('ssh-log');
-					logElement.innerHTML = `
-						<p><strong>User: </strong>${log.user}</p>
-						<p><strong>IP: </strong>${log.ip}</p>
-						<p><strong>Time: </strong>${new Date(log.time).toLocaleString()}</p>
-					`;
-					sshLogsContainer.appendChild(logElement);
-				});
-			}
-		} catch (error) {
-			console.error('Error displaying SSH logs:', error);
-		}
-	};
-
-	const server = { ip: '10.10.10.104', port: '3000' }; // Example server details
-	displaySshLogs(server);
-
-	const terminal = new Terminal();
-	const terminalContainer = document.getElementById('ssh-terminal-container');
-	if (terminalContainer) {
-		terminal.open(terminalContainer);
-	}
-
-	document.getElementById('connect-ssh-btn').addEventListener('click', async () => {
-		const serverSelect = document.getElementById('server-select');
-		const username = document.getElementById('ssh-username').value;
-		const password = document.getElementById('ssh-password').value;
-
-		if (serverSelect && username && password) {
-			const selectedServer = serverSelect.value;
-			const [name, ip] = selectedServer.split(' (')[1].replace(')', '').split(':');
-			const response = await window.api.connectSSH({ ip, username, password });
-
-			if (response.success) {
-				terminal.write('Connected to SSH server.\r\n');
-				terminal.onData(async (data) => {
-					const commandResponse = await window.api.executeCommand(data.trim());
-					if (commandResponse.success) {
-						terminal.write(commandResponse.output + '\r\n');
-					} else {
-						terminal.write('Error: ' + commandResponse.message + '\r\n');
-					}
-				});
-			} else {
-				terminal.write('Failed to connect: ' + response.message + '\r\n');
-			}
-		}
-	});
 });

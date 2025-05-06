@@ -4,20 +4,24 @@ const { app } = require('electron');
 
 const getFilePath = (filename) => {
 	const userDataPath = app.getPath('userData');
+	console.log(`User data path: ${userDataPath}`); // Debugging
 	return path.join(userDataPath, filename);
 };
- 
+
 const readData = (filename) => {
-	const filePath = getFilePath(filename); // Fixed typo: "filenam	e" -> "filename"
+	const filePath = getFilePath(filename);
+	console.log(`Reading data from: ${filePath}`); // Debugging
 	if (!fs.existsSync(filePath)) {
+		console.log(`File does not exist: ${filePath}`); // Debugging
 		return {};
 	}
-	const data = fs.readFileSync(filePath);
+	const data = fs.readFileSync(filePath, 'utf-8');
 	return JSON.parse(data);
 };
 
 const writeData = (filename, data) => {
 	const filePath = getFilePath(filename);
+	console.log(`Writing data to: ${filePath}`); // Debugging
 	fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 };
 
@@ -32,8 +36,10 @@ const writeSshLogs = (logs) => writeData('ssh-logs.json', logs);
 
 const addServer = (server) => {
 	const servers = readServers();
+	console.log('Existing servers:', servers); // Debugging
 	servers[server.ip] = server;
 	writeServers(servers);
+	console.log('Server added to storage:', server); // Debugging
 };
 
 const removeServer = (ip) => {

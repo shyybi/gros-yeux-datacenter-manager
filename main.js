@@ -2,8 +2,6 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const axios = require('axios');
 const storage = require('./storage');
-const { NodeSSH } = require('node-ssh');
-const ssh = new NodeSSH();
 
 let mainWindow;
 
@@ -13,9 +11,9 @@ function createWindow() {
     height: 825,
     frame: true,
     webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true,
-      preload: path.join(__dirname, 'preload.js'),
+      nodeIntegration: false, 
+      contextIsolation: true, 
+      preload: path.join(__dirname, 'preload.js') 
     }
   });
 
@@ -49,9 +47,11 @@ ipcMain.handle('make-request', async (event, url) => {
 });
 
 ipcMain.handle('add-server', async (event, server) => {
+  console.log('add-server called with:', server); 
   try {
     await axios.get(`http://${server.ip}:${server.port}/api/ram-usage`);
     storage.addServer(server);
+    console.log('Server added successfully'); 
     return { success: true };
   } catch (error) {
     console.error('Error adding server:', error);
@@ -86,11 +86,10 @@ ipcMain.handle('get-server-data', async () => {
     const fetchData = async (server) => {
       try {
         const ramResponse = await axios.get(`http://${server.ip}:${server.port}/api/ram-usage`);
-        const [cpuResponse, diskResponse, networkResponse, sshResponse] = await Promise.all([
+        const [cpuResponse, diskResponse, networkResponse] = await Promise.all([
           axios.get(`http://${server.ip}:${server.port}/api/cpu-usage`),
           axios.get(`http://${server.ip}:${server.port}/api/disk-usage`),
-          axios.get(`http://${server.ip}:${server.port}/api/network-usage`),
-          axios.get(`http://${server.ip}:${server.port}/api/ssh-sessions`)
+          axios.get(`http://${server.ip}:${server.port}/api/network-usage`)
         ]);
 
         return {
@@ -105,7 +104,6 @@ ipcMain.handle('get-server-data', async () => {
           cpu: cpuResponse.data,
           disk: diskResponse.data,
           network: networkResponse.data,
-          sshSessions: sshResponse.data.sshSessions,
           error: false
         };
       } catch (error) {
@@ -150,71 +148,5 @@ ipcMain.handle('update-server', async (event, server) => {
   } catch (error) {
     console.error('Error updating server:', error);
     return { success: false, message: 'Error fetching the server API data' };
-  }
-});
-
-ipcMain.handle('get-ssh-sessions', (event, serverName) => {
-  try {
-    const sessions = storage.getSshSessions(serverName);
-    return sessions;
-  } catch (error) {
-    console.error('Error getting SSH sessions:', error);
-    throw error;
-  }
-});
-
-ipcMain.handle('add-ssh-session', (event, session) => {
-  try {
-    storage.addSshSession(session);
-    return { success: true };
-  } catch (error) {
-    console.error('Error adding SSH session:', error);
-    return { success: false, message: 'Error adding SSH session' };
-  }
-});
-
-ipcMain.handle('get-last-user', async (event, server) => {
-  try {
-    const response = await axios.get(`http://${server.ip}:${server.port}/api/last-user`);
-    storage.addSshLog(response.data);
-    return [response.data];
-  } catch (error) {
-    console.error('Error fetching last user data:', error);
-    throw error;
-  }
-});
-
-ipcMain.handle('get-ssh-logs', (event) => {
-  try {
-    const logs = storage.getSshLogs();
-    return logs;
-  } catch (error) {
-    console.error('Error getting SSH logs:', error);
-    throw error;
-  }
-});
-
-ipcMain.handle('connect-ssh', async (event, { ip, username, password }) => {
-  try {
-    await ssh.connect({
-      host: ip,
-      username,
-      password,
-      port: 22
-    });
-    return { success: true };
-  } catch (error) {
-    console.error('Error connecting to SSH:', error);
-    return { success: false, message: error.message };
-  }
-});
-
-ipcMain.handle('execute-command', async (event, command) => {
-  try {
-    const result = await ssh.execCommand(command);
-    return { success: true, output: result.stdout || result.stderr };
-  } catch (error) {
-    console.error('Error executing command:', error);
-    return { success: false, message: error.message };
   }
 });
