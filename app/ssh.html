@@ -4,14 +4,14 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="stylesheet" href="style.css">
-	<title>Gros'Yeux - Server Manager</title>
+	<title>Gros'Yeux - SSH Manager</title>
 </head>
 <body>
 	<div class="page-order">
 		<!-- Here is the left side-->
 		<div class="left-side" id="left-side">
 			<div class="navbar">
-				<a href="#" class="app-title" >Gros'Yeux</a>
+				<a href="#" class="app-title">Gros'Yeux</a>
 				<a href="index.html" class="link">Servers</a>
 				<a href="logs.html" class="link">Logs</a>
 				<a href="ssh.html" class="link">Ssh</a>
@@ -24,29 +24,19 @@
 		</div>
 		<!-- Here is the wide side-->
 		<div class="wide-side" id="wide-side">
+			<h1>SSH Manager</h1>
 			<div>
-				<h1>Server Settings</h1>
-				<button
-					class="button">
-					Reset cache
-				</button>
+				<select id="server-select">
+					<!-- Options will be populated dynamically -->
+				</select>
 			</div>
-			
-			<div class="content-container">
-				<div class="server-form">
-					<h2>Add Server</h2>
-					<input type="text" id="server-name" placeholder="Server Name">
-					<input type="text" id="server-ip" placeholder="Server IP">
-					<input type="text" id="server-port" placeholder="Server Port">
-					<button id="add-server-btn">Add Server</button>
-					<p id="add-server-error" class="error-message"></p> <!-- Element for error messages -->
-				</div>
-				<div class="server-list">
-					<h2>Current Servers</h2>
-					<ul id="server-list">
-						<!-- Server list will be injected here -->
-					</ul>
-				</div>
+			<div>
+				<input type="text" id="ssh-username" placeholder="Username">
+				<input type="password" id="ssh-password" placeholder="Password">
+				<button id="connect-ssh-btn">Connect</button>
+			</div>
+			<div id="ssh-terminal-container">
+				<!-- Terminal will be rendered here -->
 			</div>
 		</div>
 	</div>

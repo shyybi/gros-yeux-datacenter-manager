@@ -2,6 +2,8 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const axios = require('axios');
 const storage = require('./storage');
+const { NodeSSH } = require('node-ssh');
+const ssh = new NodeSSH();
 
 let mainWindow;
 
@@ -83,8 +85,8 @@ ipcMain.handle('get-server-data', async () => {
 
     const fetchData = async (server) => {
       try {
-        const [ramResponse, cpuResponse, diskResponse, networkResponse, sshResponse] = await Promise.all([
-          axios.get(`http://${server.ip}:${server.port}/api/ram-usage`),
+        const ramResponse = await axios.get(`http://${server.ip}:${server.port}/api/ram-usage`);
+        const [cpuResponse, diskResponse, networkResponse, sshResponse] = await Promise.all([
           axios.get(`http://${server.ip}:${server.port}/api/cpu-usage`),
           axios.get(`http://${server.ip}:${server.port}/api/disk-usage`),
           axios.get(`http://${server.ip}:${server.port}/api/network-usage`),
@@ -117,7 +119,21 @@ ipcMain.handle('get-server-data', async () => {
       }
     };
 
-    const serverDataPromises = Object.values(servers).map(fetchData);
+    const serverDataPromises = Object.values(servers).map(async (server) => {
+      try {
+        const ramResponse = await axios.get(`http://${server.ip}:${server.port}/api/ram-usage`);
+        return await fetchData(server);
+      } catch (error) {
+        console.error(`Error fetching RAM data for server ${server.name}:`, error);
+        return {
+          name: server.name,
+          ip: server.ip,
+          port: server.port,
+          error: true
+        };
+      }
+    });
+
     const serverData = (await Promise.all(serverDataPromises)).filter(server => !server.error);
     return serverData;
   } catch (error) {
@@ -160,8 +176,8 @@ ipcMain.handle('add-ssh-session', (event, session) => {
 ipcMain.handle('get-last-user', async (event, server) => {
   try {
     const response = await axios.get(`http://${server.ip}:${server.port}/api/last-user`);
-    storage.addSshLog(response.data); // Log the SSH connection
-    return [response.data]; // Ensure it returns an array
+    storage.addSshLog(response.data);
+    return [response.data];
   } catch (error) {
     console.error('Error fetching last user data:', error);
     throw error;
@@ -175,5 +191,30 @@ ipcMain.handle('get-ssh-logs', (event) => {
   } catch (error) {
     console.error('Error getting SSH logs:', error);
     throw error;
+  }
+});
+
+ipcMain.handle('connect-ssh', async (event, { ip, username, password }) => {
+  try {
+    await ssh.connect({
+      host: ip,
+      username,
+      password,
+      port: 22
+    });
+    return { success: true };
+  } catch (error) {
+    console.error('Error connecting to SSH:', error);
+    return { success: false, message: error.message };
+  }
+});
+
+ipcMain.handle('execute-command', async (event, command) => {
+  try {
+    const result = await ssh.execCommand(command);
+    return { success: true, output: result.stdout || result.stderr };
+  } catch (error) {
+    console.error('Error executing command:', error);
+    return { success: false, message: error.message };
   }
 });

@@ -6,9 +6,9 @@ const getFilePath = (filename) => {
 	const userDataPath = app.getPath('userData');
 	return path.join(userDataPath, filename);
 };
-
+ 
 const readData = (filename) => {
-	const filePath = getFilePath(filename);
+	const filePath = getFilePath(filename); // Fixed typo: "filenam	e" -> "filename"
 	if (!fs.existsSync(filePath)) {
 		return {};
 	}
@@ -48,7 +48,7 @@ const updateServer = (server) => {
 	const servers = readServers();
 	servers[server.ip] = server;
 	writeServers(servers);
-};
+}; 
 
 const addSshSession = (session) => {
 	const sessions = readSshSessions();

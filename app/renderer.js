@@ -1,3 +1,6 @@
+import { Terminal } from 'xterm';
+import 'xterm/css/xterm.css';
+
 window.addEventListener('DOMContentLoaded', () => {
 	const fetchDataAndUpdate = async () => {
 		try {
@@ -58,7 +61,7 @@ window.addEventListener('DOMContentLoaded', () => {
 							},
 							options: {
 								animation: {
-									duration: 1000,
+									duration: 500,
 									easing: 'easeInOutQuad'
 								},
 								scales: {
@@ -387,4 +390,36 @@ window.addEventListener('DOMContentLoaded', () => {
 
 	const server = { ip: '10.10.10.104', port: '3000' }; // Example server details
 	displaySshLogs(server);
+
+	const terminal = new Terminal();
+	const terminalContainer = document.getElementById('ssh-terminal-container');
+	if (terminalContainer) {
+		terminal.open(terminalContainer);
+	}
+
+	document.getElementById('connect-ssh-btn').addEventListener('click', async () => {
+		const serverSelect = document.getElementById('server-select');
+		const username = document.getElementById('ssh-username').value;
+		const password = document.getElementById('ssh-password').value;
+
+		if (serverSelect && username && password) {
+			const selectedServer = serverSelect.value;
+			const [name, ip] = selectedServer.split(' (')[1].replace(')', '').split(':');
+			const response = await window.api.connectSSH({ ip, username, password });
+
+			if (response.success) {
+				terminal.write('Connected to SSH server.\r\n');
+				terminal.onData(async (data) => {
+					const commandResponse = await window.api.executeCommand(data.trim());
+					if (commandResponse.success) {
+						terminal.write(commandResponse.output + '\r\n');
+					} else {
+						terminal.write('Error: ' + commandResponse.message + '\r\n');
+					}
+				});
+			} else {
+				terminal.write('Failed to connect: ' + response.message + '\r\n');
+			}
+		}
+	});
 });

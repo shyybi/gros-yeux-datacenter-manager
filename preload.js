@@ -10,5 +10,7 @@ contextBridge.exposeInMainWorld('api', {
   getSshSessions: (serverName) => ipcRenderer.invoke('get-ssh-sessions', serverName),
   addSshSession: (session) => ipcRenderer.invoke('add-ssh-session', session),
   getSshLogs: () => ipcRenderer.invoke('get-ssh-logs'),
-  getLastUser: (server) => ipcRenderer.invoke('get-last-user', server)
+  getLastUser: (server) => ipcRenderer.invoke('get-last-user', server),
+  connectSSH: (details) => ipcRenderer.invoke('connect-ssh', details),
+  executeCommand: (command) => ipcRenderer.invoke('execute-command', command)
 });
