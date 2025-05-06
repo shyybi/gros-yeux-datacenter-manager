@@ -189,7 +189,7 @@ window.addEventListener('DOMContentLoaded', () => {
 	const updateServerList = async () => {
 		try {
 			console.log('Fetching server list...');
-			const servers = await window.api.getServers(); // Ensure this calls storage.js
+			const servers = await window.api.getServers(); 
 			console.log('Server list fetched:', servers);
 			const serverList = document.getElementById('server-list');
 			if (serverList) {
@@ -236,8 +236,8 @@ window.addEventListener('DOMContentLoaded', () => {
 			const port = document.getElementById('server-port').value;
 			const errorMessageElement = document.getElementById('add-server-error');
 
-			console.log('Add Server Button Clicked'); // Debugging
-			console.log(`Name: ${name}, IP: ${ip}, Port: ${port}`); // Debugging
+			console.log('Add Server Button Clicked'); 
+			console.log(`Name: ${name}, IP: ${ip}, Port: ${port}`); 
 
 			if (!name || !ip || !port) {
 				errorMessageElement.textContent = 'Please fill in all fields.';
@@ -246,7 +246,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 			try {
 				const response = await window.api.addServer({ name, ip, port });
-				console.log('Response from addServer:', response); // Debugging
+				console.log('Response from addServer:', response); 
 				if (response.success) {
 					await fetchDataAndUpdate();
 					await updateServerList();

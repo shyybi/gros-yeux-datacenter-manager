@@ -1,11 +1,11 @@
 const fs = require('fs');
 const path = require('path');
-const { app } = require('electron');
 
 const getFilePath = (filename) => {
-	const userDataPath = app.getPath('userData');
-	console.log(`User data path: ${userDataPath}`); // Debugging
-	return path.join(userDataPath, filename);
+	// Use the project directory instead of the AppData directory
+	const projectPath = path.join(__dirname, filename);
+	console.log(`Project data path: ${projectPath}`); // Debugging
+	return projectPath;
 };
 
 const readData = (filename) => {

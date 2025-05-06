@@ -2,7 +2,7 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const axios = require('axios');
 const storage = require('./storage');
-
+require('dotenv').config(); 
 let mainWindow;
 
 function createWindow() {
@@ -79,6 +79,39 @@ ipcMain.handle('get-servers', (event) => {
   }
 });
 
+const inaccessibleServers = new Map(); // Map to track last notification time for each server
+
+async function notifySlack(server) {
+  const slackWebhookUrl = process.env.SLACK_WEBHOOK_URL;
+  if (!slackWebhookUrl) {
+    console.error('SLACK_WEBHOOK_URL is not defined in the environment variables.');
+    return;
+  }
+
+  const now = Date.now();
+  const lastNotificationTime = inaccessibleServers.get(server.ip) || 0;
+
+  // Check if 10 minutes (600000 ms) have passed since the last notification
+  if (now - lastNotificationTime < 600000) {
+    console.log(`Skipping Slack notification for ${server.name} as it was recently notified.`);
+    return;
+  }
+
+  const message = {
+    text: `Serveur : ${server.name} (${server.ip}:${server.port}) est inaccessible`
+  };
+
+  try {
+    await axios.post(slackWebhookUrl, message, {
+      headers: { 'Content-Type': 'application/json' }
+    });
+    console.log(`Notification envoyée à Slack pour le serveur : ${server.name}`);
+    inaccessibleServers.set(server.ip, now); // Update the last notification time
+  } catch (error) {
+    console.error('Erreur lors de l\'envoi de la notification Slack:', error);
+  }
+}
+
 ipcMain.handle('get-server-data', async () => {
   try {
     const servers = storage.getServers();
@@ -91,6 +124,8 @@ ipcMain.handle('get-server-data', async () => {
           axios.get(`http://${server.ip}:${server.port}/api/disk-usage`),
           axios.get(`http://${server.ip}:${server.port}/api/network-usage`)
         ]);
+
+        inaccessibleServers.delete(server.ip); // Remove from inaccessibleServers if it becomes accessible
 
         return {
           name: server.name,
@@ -107,7 +142,8 @@ ipcMain.handle('get-server-data', async () => {
           error: false
         };
       } catch (error) {
-        console.error(`Error fetching data for server ${server.name}:`, error);
+        console.error(`Erreur lors de la récupération des données pour le serveur ${server.name}:`, error);
+        await notifySlack(server); // Notify Slack if the server is inaccessible
         return {
           name: server.name,
           ip: server.ip,
@@ -117,25 +153,11 @@ ipcMain.handle('get-server-data', async () => {
       }
     };
 
-    const serverDataPromises = Object.values(servers).map(async (server) => {
-      try {
-        const ramResponse = await axios.get(`http://${server.ip}:${server.port}/api/ram-usage`);
-        return await fetchData(server);
-      } catch (error) {
-        console.error(`Error fetching RAM data for server ${server.name}:`, error);
-        return {
-          name: server.name,
-          ip: server.ip,
-          port: server.port,
-          error: true
-        };
-      }
-    });
-
+    const serverDataPromises = Object.values(servers).map(fetchData);
     const serverData = (await Promise.all(serverDataPromises)).filter(server => !server.error);
     return serverData;
   } catch (error) {
-    console.error('Error fetching server data:', error);
+    console.error('Erreur lors de la récupération des données des serveurs:', error);
     throw error;
   }
 });
