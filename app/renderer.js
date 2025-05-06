@@ -24,12 +24,12 @@ window.addEventListener('DOMContentLoaded', () => {
 							</div>
 							<div class="chart-container"> 
 								<div class="server-chart">
-									<canvas id="ramChart-${server.name}"></canvas>
-									<p>Usage Percentage: ${server.ram.usagePercentage}</p>
-								</div>
-								<div class="server-chart">
 									<canvas id="cpuChart-${server.name}"></canvas>
 									<p>CPU Usage: ${server.cpu.currentLoad.toFixed(2)}%</p>
+								</div>
+								<div class="server-chart">
+									<canvas id="ramChart-${server.name}"></canvas>
+									<p>Usage Percentage: ${server.ram.usagePercentage}</p>
 								</div>
 								<div class="server-chart">
 									<canvas id="diskChart-${server.name}"></canvas>
