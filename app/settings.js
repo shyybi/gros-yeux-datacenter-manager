@@ -8,7 +8,6 @@ document.getElementById('add-server-btn').addEventListener('click', () => {
 		return;
 	}
 
-	// Use window.api to call the addServer function
 	window.api.addServer({ name, ip, port })
 		.then(response => {
 			if (response.success) {

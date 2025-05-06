@@ -359,4 +359,42 @@ window.addEventListener('DOMContentLoaded', () => {
 	if (document.body.contains(document.getElementById('server-select'))) {
 		initializeLogsPage();
 	}
+
+	const notificationSettingsBtn = document.getElementById('notification-settings-btn');
+	if (notificationSettingsBtn) {
+		notificationSettingsBtn.addEventListener('click', () => {
+			// Create the popup container
+			const popup = document.createElement('div');
+			popup.classList.add('popup-container');
+			popup.innerHTML = `
+				<div class="popup">
+					<h2>Notification Settings</h2>
+					<label for="slack-url-input">Slack Webhook URL:</label>
+					<input type="text" id="slack-url-input" placeholder="Enter Slack Webhook URL">
+					<div class="popup-buttons">
+						<button id="cancel-slack-url-btn" class="cancel">Cancel</button>
+						<button id="save-slack-url-btn" class="save">Save</button>
+					</div>
+				</div>
+			`;
+			document.body.appendChild(popup);
+
+			// Handle save button click
+			document.getElementById('save-slack-url-btn').addEventListener('click', () => {
+				const slackUrl = document.getElementById('slack-url-input').value;
+				if (slackUrl) {
+					localStorage.setItem('slackWebhookUrl', slackUrl); // Store the URL in localStorage
+					alert('Slack Webhook URL saved successfully!');
+					document.body.removeChild(popup); // Close the popup
+				} else {
+					alert('Please enter a valid Slack Webhook URL.');
+				}
+			});
+
+			// Handle cancel button click
+			document.getElementById('cancel-slack-url-btn').addEventListener('click', () => {
+				document.body.removeChild(popup); // Close the popup
+			});
+		});
+	}
 });

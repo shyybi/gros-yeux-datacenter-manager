@@ -7,16 +7,18 @@ let mainWindow;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 1250,
+    width: 1500,
     height: 825,
     frame: true,
     webPreferences: {
       nodeIntegration: false, 
       contextIsolation: true, 
       preload: path.join(__dirname, 'preload.js') 
-    }
+    },
+    autoHideMenuBar: false 
   });
 
+  //mainWindow.setMenu(null); 
   mainWindow.loadFile('app/index.html');
 }
 
@@ -41,7 +43,7 @@ ipcMain.handle('make-request', async (event, url) => {
     const response = await axios.get(url);
     return response.data;
   } catch (error) {
-    console.error('Erreur lors de la requête:', error);
+    //console.error('Erreur lors de la requête:', error);
     throw error;
   }
 });
@@ -51,10 +53,10 @@ ipcMain.handle('add-server', async (event, server) => {
   try {
     await axios.get(`http://${server.ip}:${server.port}/api/ram-usage`);
     storage.addServer(server);
-    console.log('Server added successfully'); 
+    //console.log('Server added successfully'); 
     return { success: true };
   } catch (error) {
-    console.error('Error adding server:', error);
+    //console.error('Error adding server:', error);
     return { success: false, message: 'Error fetching the server API data' };
   }
 });
@@ -64,7 +66,7 @@ ipcMain.handle('remove-server', async (event, ip) => {
     storage.removeServer(ip);
     return { success: true };
   } catch (error) {
-    console.error('Error removing server:', error);
+    //console.error('Error removing server:', error);
     throw error;
   }
 });
@@ -74,26 +76,24 @@ ipcMain.handle('get-servers', (event) => {
     const servers = storage.getServers();
     return servers;
   } catch (error) {
-    console.error('Error getting servers:', error);
+    //console.error('Error getting servers:', error);
     throw error;
   }
 });
 
-const inaccessibleServers = new Map(); // Map to track last notification time for each server
-
+const inaccessibleServers = new Map(); 
 async function notifySlack(server) {
   const slackWebhookUrl = process.env.SLACK_WEBHOOK_URL;
   if (!slackWebhookUrl) {
-    console.error('SLACK_WEBHOOK_URL is not defined in the environment variables.');
     return;
   }
 
   const now = Date.now();
   const lastNotificationTime = inaccessibleServers.get(server.ip) || 0;
 
-  // Check if 10 minutes (600000 ms) have passed since the last notification
-  if (now - lastNotificationTime < 600000) {
-    console.log(`Skipping Slack notification for ${server.name} as it was recently notified.`);
+  
+  if (now - lastNotificationTime < 1800000) { 
+    //console.log(`Skipping Slack notification for ${server.name} as it was recently notified.`);
     return;
   }
 
@@ -106,9 +106,10 @@ async function notifySlack(server) {
       headers: { 'Content-Type': 'application/json' }
     });
     console.log(`Notification envoyée à Slack pour le serveur : ${server.name}`);
-    inaccessibleServers.set(server.ip, now); // Update the last notification time
+    inaccessibleServers.set(server.ip, now); 
   } catch (error) {
-    console.error('Erreur lors de l\'envoi de la notification Slack:', error);
+    //console.error('Erreur lors de l\'envoi de la notification Slack:', error);
+    return;
   }
 }
 
@@ -125,7 +126,7 @@ ipcMain.handle('get-server-data', async () => {
           axios.get(`http://${server.ip}:${server.port}/api/network-usage`)
         ]);
 
-        inaccessibleServers.delete(server.ip); // Remove from inaccessibleServers if it becomes accessible
+        inaccessibleServers.delete(server.ip); 
 
         return {
           name: server.name,
@@ -143,7 +144,7 @@ ipcMain.handle('get-server-data', async () => {
         };
       } catch (error) {
         console.error(`Erreur lors de la récupération des données pour le serveur ${server.name}:`, error);
-        await notifySlack(server); // Notify Slack if the server is inaccessible
+        await notifySlack(server); 
         return {
           name: server.name,
           ip: server.ip,
