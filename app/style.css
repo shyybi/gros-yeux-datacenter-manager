@@ -160,7 +160,39 @@ body {
 	cursor: pointer;
 	transition: background-color 0.3s ease;
 }
+.wide-side .button {
+	margin: 5px;
+	padding: 10px 20px;
+	background-color: #4ca5af;
+	color: white;
+	border: none;
+	border-radius: 5px;
+	cursor: pointer;
+	transition: background-color 0.3s ease;
+}
 
+.ssh-form input {
+	margin: 5px;
+	padding: 10px;
+	border: 1px solid #ccc;
+	border-radius: 5px;
+	background-color: #2a2d34;
+	color: #ffffff;
+} 
+
+.ssh-form button {
+	padding: 10px 20px;
+	background-color: #4ca5af;
+	color: white;
+	border: none;
+	border-radius: 5px;
+	cursor: pointer;
+	transition: background-color 0.3s ease;
+}
+.server-form button:disabled {
+	background-color: #ccc;
+	cursor: not-allowed;
+}
 .server-form button:hover {
 	background-color: #4571a0;
 }

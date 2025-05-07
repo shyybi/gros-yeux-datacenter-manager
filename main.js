@@ -18,7 +18,7 @@ function createWindow() {
     autoHideMenuBar: false 
   });
 
-  //mainWindow.setMenu(null); 
+  mainWindow.setMenu(null); 
   mainWindow.loadFile('app/index.html');
 }
 

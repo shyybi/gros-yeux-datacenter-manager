@@ -363,7 +363,6 @@ window.addEventListener('DOMContentLoaded', () => {
 	const notificationSettingsBtn = document.getElementById('notification-settings-btn');
 	if (notificationSettingsBtn) {
 		notificationSettingsBtn.addEventListener('click', () => {
-			// Create the popup container
 			const popup = document.createElement('div');
 			popup.classList.add('popup-container');
 			popup.innerHTML = `
@@ -379,21 +378,19 @@ window.addEventListener('DOMContentLoaded', () => {
 			`;
 			document.body.appendChild(popup);
 
-			// Handle save button click
 			document.getElementById('save-slack-url-btn').addEventListener('click', () => {
 				const slackUrl = document.getElementById('slack-url-input').value;
 				if (slackUrl) {
-					localStorage.setItem('slackWebhookUrl', slackUrl); // Store the URL in localStorage
+					localStorage.setItem('slackWebhookUrl', slackUrl); 
 					alert('Slack Webhook URL saved successfully!');
-					document.body.removeChild(popup); // Close the popup
+					document.body.removeChild(popup); 
 				} else {
 					alert('Please enter a valid Slack Webhook URL.');
 				}
 			});
 
-			// Handle cancel button click
 			document.getElementById('cancel-slack-url-btn').addEventListener('click', () => {
-				document.body.removeChild(popup); // Close the popup
+				document.body.removeChild(popup); 
 			});
 		});
 	}
