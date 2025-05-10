@@ -248,9 +248,8 @@ window.addEventListener('DOMContentLoaded', () => {
 				const response = await window.api.addServer({ name, ip, port });
 				console.log('Response from addServer:', response); 
 				if (response.success) {
-					await fetchDataAndUpdate();
-					await updateServerList();
-					errorMessageElement.textContent = '';
+					alert('Server added successfully!');
+					location.reload();
 				} else {
 					errorMessageElement.textContent = response.message || 'Error adding server.';
 				}
@@ -334,7 +333,7 @@ window.addEventListener('DOMContentLoaded', () => {
 					} else {
 						sshSessionsContainer.innerHTML = '<p>No SSH sessions found.</p>';
 					}
-				}, 500); // Duration of the animation
+				}, 500); 
 			}
 		} catch (error) {
 			console.error('Error displaying SSH sessions:', error);

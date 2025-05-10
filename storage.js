@@ -1,18 +1,18 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const getFilePath = (filename) => {
-	
 	const projectPath = path.join(__dirname, filename);
-	//console.log(`Project data path: ${projectPath}`);
 	return projectPath;
 };
 
 const readData = (filename) => {
 	const filePath = getFilePath(filename);
-	//console.log(`Reading data from: ${filePath}`); 
 	if (!fs.existsSync(filePath)) {
-		//console.log(`File does not exist: ${filePath}`); 
 		return {};
 	}
 	const data = fs.readFileSync(filePath, 'utf-8');
@@ -21,7 +21,6 @@ const readData = (filename) => {
 
 const writeData = (filename, data) => {
 	const filePath = getFilePath(filename);
-	//console.log(`Writing data to: ${filePath}`); 
 	fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 };
 
@@ -36,10 +35,8 @@ const writeSshLogs = (logs) => writeData('ssh-logs.json', logs);
 
 const addServer = (server) => {
 	const servers = readServers();
-	//console.log('Existing servers:', servers); 
 	servers[server.ip] = server;
 	writeServers(servers);
-	//console.log('Server added to storage:', server); 
 };
 
 const removeServer = (ip) => {
@@ -54,7 +51,7 @@ const updateServer = (server) => {
 	const servers = readServers();
 	servers[server.ip] = server;
 	writeServers(servers);
-}; 
+};
 
 const addSshSession = (session) => {
 	const sessions = readSshSessions();
@@ -78,7 +75,7 @@ const addSshLog = (log) => {
 
 const getSshLogs = () => readSshLogs();
 
-module.exports = {
+export {
 	addServer,
 	removeServer,
 	getServers,

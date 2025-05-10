@@ -1,11 +1,17 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
-const path = require('path');
-const axios = require('axios');
-const storage = require('./storage.js');
-const { NodeSSH } = require('node-ssh');
-const dotenv = require('dotenv');
+import { app, BrowserWindow, ipcMain } from 'electron';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import axios from 'axios';
+import { NodeSSH } from 'node-ssh';
+import dotenv from 'dotenv';
+import * as storage from './storage.js';
+
 const ssh = new NodeSSH();
 dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 let mainWindow;
 
 function createWindow() {
@@ -14,14 +20,14 @@ function createWindow() {
     height: 825,
     frame: true,
     webPreferences: {
-      nodeIntegration: false, 
-      contextIsolation: true, 
-      preload: path.join(__dirname, 'preload.js') 
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: path.join(__dirname, 'preload.js'), 
     },
-    autoHideMenuBar: false 
+    autoHideMenuBar: false,
   });
 
-  mainWindow.setMenu(null); 
+  mainWindow.setMenu(null);
   mainWindow.loadFile('app/index.html');
 }
 
@@ -40,46 +46,45 @@ app.on('window-all-closed', () => {
     app.quit();
   }
 });
-ipcMain.handle('make-request', async (_, url) => {
+
 ipcMain.handle('make-request', async (event, url) => {
   try {
     const response = await axios.get(url);
     return response.data;
   } catch (error) {
-    //console.error('Erreur lors de la requête:', error);
     throw error;
   }
 });
-ipcMain.handle('add-server', async (_, server) => {
+
 ipcMain.handle('add-server', async (event, server) => {
   console.log('add-server called with:', server); 
   try {
-    await axios.get(`http://${server.ip}:${server.port}/api/ram-usage`);
+    const testUrl = `http://${server.ip}:${server.port}/api/ram-usage`;
+    console.log(`Testing server API connectivity at: ${testUrl}`);
+    await axios.get(testUrl); 
     storage.addServer(server);
-    //console.log('Server added successfully'); 
+    console.log('Server added successfully');
     return { success: true };
   } catch (error) {
-    //console.error('Error adding server:', error);
-    return { success: false, message: 'Error fetching the server API data' };
+    console.error('Error adding server:', error.message); 
+    return { success: false, message: 'Error fetching the server API data. Please check the server IP, port, and API availability.' };
   }
 });
-ipcMain.handle('remove-server', async (_, ip) => {
+
 ipcMain.handle('remove-server', async (event, ip) => {
   try {
     storage.removeServer(ip);
     return { success: true };
   } catch (error) {
-    //console.error('Error removing server:', error);
     throw error;
   }
 });
-ipcMain.handle('get-servers', () => {
+
 ipcMain.handle('get-servers', (event) => {
   try {
     const servers = storage.getServers();
     return servers;
   } catch (error) {
-    //console.error('Error getting servers:', error);
     throw error;
   }
 });
@@ -94,9 +99,7 @@ async function notifySlack(server) {
   const now = Date.now();
   const lastNotificationTime = inaccessibleServers.get(server.ip) || 0;
 
-  
   if (now - lastNotificationTime < 1800000) { 
-    //console.log(`Skipping Slack notification for ${server.name} as it was recently notified.`);
     return;
   }
 
@@ -111,7 +114,6 @@ async function notifySlack(server) {
     console.log(`Notification envoyée à Slack pour le serveur : ${server.name}`);
     inaccessibleServers.set(server.ip, now); 
   } catch (error) {
-    //console.error('Erreur lors de l\'envoi de la notification Slack:', error);
     return;
   }
 }
@@ -165,61 +167,61 @@ ipcMain.handle('get-server-data', async () => {
     throw error;
   }
 });
-ipcMain.handle('update-server', async (_, server) => {
+
 ipcMain.handle('update-server', async (event, server) => {
   try {
     await axios.get(`http://${server.ip}:${server.port}/api/ram-usage`);
     storage.updateServer(server);
     return { success: true };
   } catch (error) {
-    console.error('Error updating server:', error);
     return { success: false, message: 'Error fetching the server API data' };
   }
 });
-ipcMain.handle('execute-ssh-command', async (_, serverName, command, username, password) => {
-	try {
-		const servers = storage.getServers();
-		const server = Object.values(servers).find(s => s.name === serverName); // Ensure only one declaration of `server`
 
-		if (!server) {
-			throw new Error(`Server with name "${serverName}" not found.`);
-		}
+ipcMain.handle('execute-ssh-command', async (event, serverName, command, username, password) => {
+  try {
+    const servers = storage.getServers();
+    const server = Object.values(servers).find(s => s.name === serverName);
 
-		if (!username || !password) {
-			throw new Error('SSH credentials are missing.');
-		}
+    if (!server) {
+      throw new Error(`Server with name "${serverName}" not found.`);
+    }
 
-		console.log(`Attempting to connect to ${server.ip}:22 as ${username}`); // Port 22 for SSH
+    if (!username || !password) {
+      throw new Error('SSH credentials are missing.');
+    }
 
-		await ssh.connect({
-			host: server.ip,
-			port: 22, // Default SSH port
-			username,
-			password
-		});
+    console.log(`Attempting to connect to ${server.ip}:22 as ${username}`);
 
-		console.log(`Connected to ${server.ip}:22. Executing command: ${command}`);
-		const result = await ssh.execCommand(command);
-		console.log(`Command output: ${result.stdout || result.stderr}`);
-		return { output: result.stdout || result.stderr };
-	} catch (error) {
-		console.error('Error executing SSH command:', error);
+    await ssh.connect({
+      host: server.ip,
+      port: 22,
+      username,
+      password
+    });
 
-		if (error.level === 'protocol' && error.fatal) {
-			return { output: 'Connection lost before handshake. Please check your credentials, server status, or port configuration.' };
-		}
+    console.log(`Connected to ${server.ip}:22. Executing command: ${command}`);
+    const result = await ssh.execCommand(command);
+    console.log(`Command output: ${result.stdout || result.stderr}`);
+    return { output: result.stdout || result.stderr };
+  } catch (error) {
+    console.error('Error executing SSH command:', error);
 
-		if (error.message.includes('All configured authentication methods failed')) {
-			return { output: 'Authentication failed. Please verify your username and password.' };
-		}
+    if (error.level === 'protocol' && error.fatal) {
+      return { output: 'Connection lost before handshake. Please check your credentials, server status, or port configuration.' };
+    }
 
-		if (error.message.includes('connect ECONNREFUSED')) {
-			return { output: 'Connection refused. Please ensure the server is reachable and SSH is enabled.' };
-		}
+    if (error.message.includes('All configured authentication methods failed')) {
+      return { output: 'Authentication failed. Please verify your username and password.' };
+    }
 
-		throw error;
-	} finally {
-		ssh.dispose();
-		console.log(`Disconnected from ${server.ip}:22`);
-	}
+    if (error.message.includes('connect ECONNREFUSED')) {
+      return { output: 'Connection refused. Please ensure the server is reachable and SSH is enabled.' };
+    }
+
+    throw error;
+  } finally {
+    ssh.dispose();
+    console.log(`Disconnected from ${server.ip}:22`);
+  }
 });
