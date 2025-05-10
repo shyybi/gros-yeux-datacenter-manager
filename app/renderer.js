@@ -370,6 +370,9 @@ window.addEventListener('DOMContentLoaded', () => {
 					<h2>Notification Settings</h2>
 					<label for="slack-url-input">Slack Webhook URL:</label>
 					<input type="text" id="slack-url-input" placeholder="Enter Slack Webhook URL">
+					<br><br>
+					<label for="slack-url-input">Discord Webhook URL:</label>
+					<input type="text" id="slack-url-input" placeholder="Enter Discord Webhook URL">
 					<div class="popup-buttons">
 						<button id="cancel-slack-url-btn" class="cancel">Cancel</button>
 						<button id="save-slack-url-btn" class="save">Save</button>
@@ -392,6 +395,32 @@ window.addEventListener('DOMContentLoaded', () => {
 			document.getElementById('cancel-slack-url-btn').addEventListener('click', () => {
 				document.body.removeChild(popup); 
 			});
+		});
+	}
+
+	const executeCommandBtn = document.getElementById('execute-command-btn');
+	if (executeCommandBtn) {
+		executeCommandBtn.addEventListener('click', async () => {
+			const command = document.getElementById('ssh-command-input').value;
+			const outputBox = document.getElementById('ssh-command-output');
+			const serverSelect = document.getElementById('server-select');
+			const username = document.getElementById('ssh-username').value;
+			const password = document.getElementById('ssh-password').value;
+			const selectedServer = serverSelect ? serverSelect.value : null;
+
+			if (!command || !selectedServer || !username || !password) {
+				outputBox.textContent = 'Please select a server, enter a command, and provide SSH credentials.';
+				return;
+			}
+
+			try {
+				outputBox.textContent = 'Executing command...';
+				const response = await window.api.executeSshCommand(selectedServer, command, username, password);
+				outputBox.textContent = response.output || 'Command executed successfully.';
+			} catch (error) {
+				console.error('Error executing command:', error);
+				outputBox.textContent = 'An error occurred while executing the command.';
+			}
 		});
 	}
 });

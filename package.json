@@ -32,6 +32,7 @@
   "license": "ISC",
   "description": "Just a Dashboard to manage my server room",
   "devDependencies": {
+    "@types/dotenv": "^6.1.1",
     "electron": "^33.0.0",
     "electron-builder": "^24.9.1"
   },
@@ -78,5 +79,6 @@
       "servers.json",
       "storage.js"
     ]
-  }
+  },
+  "type": "module"
 }

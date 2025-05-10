@@ -363,3 +363,38 @@ body {
 .popup-buttons button:hover {
     opacity: 0.9;
 }
+
+.ssh-command-container {
+	margin-top: 20px;
+}
+
+#ssh-command-input {
+	width: 100%;
+	padding: 10px;
+	border: 1px solid #ccc;
+	border-radius: 5px;
+	background-color: #2a2d34;
+	color: #ffffff;
+}
+
+#execute-command-btn {
+	margin-top: 10px;
+	padding: 10px 20px;
+	background-color: #4ca5af;
+	color: white;
+	border: none;
+	border-radius: 5px;
+	cursor: pointer;
+	transition: background-color 0.3s ease;
+}
+
+#ssh-command-output {
+	margin-top: 10px;
+	padding: 10px;
+	background-color: #1e1e1e;
+	color: #ffffff;
+	border: 1px solid #ccc;
+	border-radius: 5px;
+	height: 150px;
+	overflow-y: auto;
+}
