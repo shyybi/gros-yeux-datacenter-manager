@@ -39,10 +39,17 @@
 				<!-- Terminal will be rendered here -->
 			</div>
 			<div class="ssh-command-container">
-				<textarea id="ssh-command-input" placeholder="Enter command here..." rows="3"></textarea>
-				<button id="execute-command-btn">Execute</button>
-				<div id="ssh-command-output" class="ssh-output-box">
-					<!-- Command output will be displayed here -->
+				<button id="open-terminal-btn">Open Terminal</button>
+			</div>
+
+			<!-- Modal for terminal -->
+			<div id="terminal-modal" class="modal hidden">
+				<div class="modal-content">
+					<span id="close-terminal-btn" class="close">&times;</span>
+					<div id="terminal-window" class="terminal-window">
+						<!-- Simulated terminal content will be rendered here -->
+					</div>
+					<input type="text" id="terminal-input" placeholder="Enter command here...">
 				</div>
 			</div>
 		</div>

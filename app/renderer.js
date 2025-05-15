@@ -340,18 +340,65 @@ window.addEventListener('DOMContentLoaded', () => {
 		}
 	};
 
+	const displaySshLogs = async (serverName) => {
+		try {
+			const logs = await window.api.getSshLogs(serverName);
+			const sshLogsContainer = document.getElementById('ssh-logs-container');
+			if (sshLogsContainer) {
+				console.log('SSH Logs:', logs);
+				sshLogsContainer.classList.add('falling-animation');
+				sshLogsContainer.innerHTML = ''; 
+				logs.forEach(log => {
+					const logEntry = document.createElement('div');
+					logEntry.classList.add('log-entry');
+					logEntry.textContent = log;
+					sshLogsContainer.appendChild(logEntry);
+				});
+			}
+		} catch (error) {
+			console.error('Error displaying SSH logs:', error);
+		}
+	};
+	console.log(serverName)
+	const displayLogs = async (serverName) => {
+		try {
+			const response = await fetch(`http://${serverName}/api/last-user`);
+			const logs = await response.json();
+
+			const logList = document.getElementById('log-list');
+			logList.innerHTML = ''; 
+
+			logs.slice(0, 3).forEach(log => {
+				const logItem = document.createElement('li');
+				logItem.textContent = log;
+				logList.appendChild(logItem);
+			});
+		} catch (error) {
+			console.error('Error fetching logs:', error);
+		}
+	};
+
 	const serverSelect = document.getElementById('server-select');
 	if (serverSelect) {
 		serverSelect.addEventListener('change', (event) => {
 			const selectedServer = event.target.value;
 			displaySshSessions(selectedServer);
+			displaySshLogs(selectedServer);
+			displayLogs(selectedServer);
 		});
+	}
+
+	// Ensure logs are displayed on page load if a server is already selected
+	if (serverSelect && serverSelect.value) {
+		displayLogs(serverSelect.value);
 	}
 
 	const initializeLogsPage = async () => {
 		await populateServerDropdown();
 		if (serverSelect && serverSelect.value) {
 			await displaySshSessions(serverSelect.value);
+			await displaySshLogs(serverSelect.value);
+			await displayLogs(serverSelect.value);
 		}
 	};
 
@@ -422,4 +469,44 @@ window.addEventListener('DOMContentLoaded', () => {
 			}
 		});
 	}
+
+	document.getElementById('open-terminal-btn').addEventListener('click', () => {
+		const modal = document.getElementById('terminal-modal');
+		modal.classList.remove('hidden');
+	});
+
+	document.getElementById('close-terminal-btn').addEventListener('click', () => {
+		const modal = document.getElementById('terminal-modal');
+		modal.classList.add('hidden');
+	});
+
+	const terminalInput = document.getElementById('terminal-input');
+	const terminalWindow = document.getElementById('terminal-window');
+
+	terminalInput.addEventListener('keydown', async (event) => {
+		if (event.key === 'Enter') {
+			const command = terminalInput.value;
+			terminalInput.value = '';
+			terminalWindow.innerHTML += `<div class='command'>${command}</div>`;
+
+			try {
+				const serverSelect = document.getElementById('server-select');
+				const username = document.getElementById('ssh-username').value;
+				const password = document.getElementById('ssh-password').value;
+				const selectedServer = serverSelect ? serverSelect.value : null;
+
+				if (!selectedServer || !username || !password) {
+					terminalWindow.innerHTML += `<div class='error'>Error: Missing server or credentials</div>`;
+					return;
+				}
+
+				const response = await window.api.executeSshCommand(selectedServer, command, username, password);
+				terminalWindow.innerHTML += `<div class='output'>${response.output || 'Command executed successfully.'}</div>`;
+			} catch (error) {
+				terminalWindow.innerHTML += `<div class='error'>Error: ${error.message}</div>`;
+			}
+
+			terminalWindow.scrollTop = terminalWindow.scrollHeight;
+		}
+	});
 });
